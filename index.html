@@ -3,22 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Orenix Music v0.2.0</title>
-<style>
-body{font-family:sans-serif;margin:0;padding:8px 8px 190px}
-button{padding:8px 12px;border:1px solid #000;background:#ddd}
-input[type=text]{width:100%;padding:8px;box-sizing:border-box;margin:4px 0}
-.row{border:1px solid #000;padding:6px;margin:4px 0}
-nav{position:fixed;left:0;right:0;bottom:0;background:#ccc;border-top:1px solid #000;padding-bottom:env(safe-area-inset-bottom)}
-nav .t{display:flex}
-nav .t button{flex:1;border:0;border-right:1px solid #000;padding:14px 0}
-nav .t button.on{background:#888;color:#fff}
-#pl{padding:6px;border-bottom:1px solid #000;font-size:14px}
-#sk{width:100%}
-</style>
+<meta name="theme-color" content="#0d1512">
+<title>Orenix Music v0.3.0</title>
+<link rel="stylesheet" href="/style.css?v=0.3.0">
 </head>
 <body>
-<div><b>Orenix</b> <button id="authBtn">Войти через Google</button></div>
+<header class="top"><b class="logo">Orenix</b><button id="authBtn">Войти через Google</button></header>
 <div id="app"></div>
 <nav>
   <div id="pl">
@@ -31,7 +21,7 @@ nav .t button.on{background:#888;color:#fff}
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
-const VERSION='v0.2.0';
+const VERSION='v0.3.0';
 const SUPABASE_URL='https://pehcelgdqtekkknpqvaa.supabase.co';
 const SUPABASE_ANON_KEY='sb_publishable_0rAsicZ1ZzIC2qO6dJ-saQ_XBmlxVPc';
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
