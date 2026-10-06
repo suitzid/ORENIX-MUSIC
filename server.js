@@ -1,6 +1,6 @@
 const http = require('http'), fs = require('fs');
 
-// Ищет в папке файлы вида vX.Y.Z-OrenixMusic.html и берёт самый новый
+// Берёт самый новый файл vX.Y.Z-OrenixMusic.html, а если его нет, то index.html
 function latest() {
   const files = fs.readdirSync(__dirname).filter(n => /^v\d+\.\d+\.\d+-OrenixMusic\.html$/.test(n));
   const key = n => n.slice(1).split('-')[0].split('.').map(Number);
@@ -8,7 +8,7 @@ function latest() {
     const x = key(a), y = key(b);
     return x[0] - y[0] || x[1] - y[1] || x[2] - y[2];
   });
-  return files.pop();
+  return files.pop() || (fs.existsSync(__dirname + '/index.html') ? 'index.html' : null);
 }
 
 http.createServer((req, res) => {
