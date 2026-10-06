@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Orenix Music v0.1.2</title>
+<style>
+body{font-family:sans-serif;margin:0;padding:8px 8px 190px}
+button{padding:8px 12px;border:1px solid #000;background:#ddd}
+input[type=text]{width:100%;padding:8px;box-sizing:border-box}
+.row{border:1px solid #000;padding:6px;margin:4px 0}
+nav{position:fixed;left:0;right:0;bottom:0;background:#ccc;border-top:1px solid #000;padding-bottom:env(safe-area-inset-bottom)}
+nav .t{display:flex}
+nav .t button{flex:1;border:0;border-right:1px solid #000;padding:14px 0}
+nav .t button.on{background:#888;color:#fff}
+#pl{padding:6px;border-bottom:1px solid #000;font-size:14px}
+#sk{width:100%}
+</style>
+</head>
+<body>
+<div><b>Orenix</b> <button id="authBtn">Войти через Google</button></div>
+<div id="app"></div>
+<nav>
+  <div id="pl">
+    <div id="np">Ничего не играет</div>
+    <input type="range" id="sk" min="0" max="100" value="0">
+    <button id="pv">◀</button> <button id="pp">▶</button> <button id="pn">▶▶</button> <span id="tm">0:00</span>
+  </div>
+  <div class="t"><button data-nav="home">Главная</button><button data-nav="lib">Медиатека</button><button data-nav="search">Поиск</button></div>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+const VERSION='v0.1.2';
+const SUPABASE_URL='https://pehcelgdqtekkknpqvaa.supabase.co';
+const SUPABASE_ANON_KEY='sb_publishable_0rAsicZ1ZzIC2qO6dJ-saQ_XBmlxVPc';
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+
+const AWARDS=[[1,'Первый день'],[7,'Неделя'],[30,'Месяц'],[100,'100 дней'],[365,'Год']];
+const CHIPS=['phonk','lo-fi','rap','pop','rock','electronic'];
+let session=null, tab='playlists', followed=new Set(), queue=[], qi=-1, cur=[];
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const rows=(a,f)=>a.length?a.map(f).join(''):'<div class="row">Пока пусто</div>';
+const userRow=x=>`<div class="row" data-user="${x.id}"><b>${esc(x.username)}</b> ${esc(x.bio||'')}</div>`;
+const trackRows=l=>{cur=l;return rows(l,(x,i)=>`<div class="row" data-i="${i}">${esc(x.title)} — ${esc(x.artist)} <a href="${esc(x.url||'https://soundcloud.com')}" target="_blank" rel="noopener">SoundCloud</a> <button data-like="${i}">♥</button></div>`)};
+
+/* ---------- SoundCloud через Edge Function ---------- */
+async function scSearch(q){
+  try{const r=await sb.functions.invoke('soundcloud',{body:{action:'search',q}});return Array.isArray(r.data)?r.data:[]}catch(e){return []}
+}
+
+/* ---------- Наш плеер ---------- */
+const au=new Audio();
+const fmt=s=>isFinite(s)?Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0'):'0:00';
+au.ontimeupdate=()=>{sk.max=au.duration||100;sk.value=au.currentTime;tm.textContent=fmt(au.currentTime)+' / '+fmt(au.duration)};
+sk.oninput=()=>{au.currentTime=sk.value};
+au.onended=()=>step(1);
+au.onplay=()=>pp.textContent='⏸'; au.onpause=()=>pp.textContent='▶';
+pp.onclick=()=>au.paused?au.play():au.pause();
+pv.onclick=()=>step(-1); pn.onclick=()=>step(1);
+function step(d){const n=qi+d; if(n>=0&&n<queue.length) play(n,d)}
+async function play(i,d=1){
+  qi=i; const t=queue[i]; np.textContent='⏳ '+t.title+' — '+t.artist;
+  let u=null;
+  try{const r=await sb.functions.invoke('soundcloud',{body:{action:'stream',id:t.id}}); u=r.data&&r.data.url}catch(e){}
+  if(!u){np.textContent='Недоступно: '+t.title; return step(d)}
+  au.src=u; try{await au.play()}catch(e){}
+  np.textContent=t.title+' — '+t.artist;
+  if('mediaSession' in navigator){
+    navigator.mediaSession.metadata=new MediaMetadata({title:t.title,artist:t.artist,artwork:t.art?[{src:t.art}]:[]});
+    navigator.mediaSession.setActionHandler('nexttrack',()=>step(1));
+    navigator.mediaSession.setActionHandler('previoustrack',()=>step(-1));
+  }
+}
+async function like(t){
+  if(!t) return; if(!session) return signIn();
+  const id=String(t.id);
+  let {data:ex}=await sb.from('tracks').select('id').eq('source','soundcloud').eq('external_id',id).maybeSingle();
+  if(!ex){const r=await sb.from('tracks').insert({uploader_id:session.user.id,title:t.title,artist:t.artist,source:'soundcloud',external_id:id,artwork_url:t.art}).select('id').single(); ex=r.data}
+  if(ex){await sb.from('likes').upsert({user_id:session.user.id,track_id:ex.id}); np.textContent='♥ Добавлено в избранное'}
+}
+document.addEventListener('click',e=>{
+  if(e.target.closest('a')) return;
+  const lk=e.target.closest('[data-like]'); if(lk) return like(cur[lk.dataset.like]);
+  const r=e.target.closest('[data-i]'); if(r){queue=cur.slice();play(+r.dataset.i)}
+});
+
+/* ---------- Профиль ---------- */
+async function loadProfile(id){
+  const [p,pl,tr,lk,fr,fg,ds]=await Promise.all([
+    sb.from('profiles').select('*').eq('id',id).single(),
+    sb.from('playlists').select('id,title,playlist_tracks(count)').eq('owner_id',id),
+    sb.from('tracks').select('*').eq('uploader_id',id).eq('source','upload'),
+    sb.from('likes').select('tracks(*)').eq('user_id',id),
+    sb.from('follows').select('*',{count:'exact',head:true}).eq('following_id',id),
+    sb.from('follows').select('*',{count:'exact',head:true}).eq('follower_id',id),
+    sb.from('activity_days').select('*',{count:'exact',head:true}).eq('user_id',id)]);
+  const d=p.data||{}, T=x=>({id:x.external_id,title:x.title,artist:x.artist,art:x.artwork_url});
+  return {...d,views:d.profile_views||0,days:ds.count||0,followers:fr.count||0,following:fg.count||0,
+    playlists:(pl.data||[]).map(x=>({title:x.title,n:x.playlist_tracks?.[0]?.count||0})),
+    uploads:(tr.data||[]).map(T),
+    likes:(lk.data||[]).map(x=>x.tracks).filter(Boolean).map(T)};
+}
+async function showProfile(id,own){
+  const p=await loadProfile(id), isF=followed.has(p.id);
+  const action=own?'':`<button id="followBtn">${isF?'Вы подписаны':'Подписаться'}</button>`;
+  const body=tab==='playlists'?rows(p.playlists,x=>`<div class="row">${esc(x.title)} (${x.n})</div>`):trackRows(tab==='uploads'?p.uploads:p.likes);
+  app.innerHTML=`<h2>${esc(p.username)}</h2><div>${esc(p.bio||'Нет описания')}</div>${action}
+  <div class="row">Просмотров: ${p.views} | Подписчиков: ${p.followers} | Подписок: ${p.following}<br>Загружено: ${p.uploads.length} | Лайков: ${p.likes.length} | Дней: ${p.days}</div>
+  <div class="row">Награды: ${AWARDS.filter(a=>p.days>=a[0]).map(a=>a[1]).join(', ')||'пока нет'}</div>
+  <div><button data-tab="playlists">Плейлисты</button><button data-tab="uploads">Песни</button><button data-tab="likes">Избранное</button></div>${body}`;
+  app.onclick=async e=>{
+    const t=e.target.closest('[data-tab]'); if(t){tab=t.dataset.tab;return showProfile(id,own)}
+    if(e.target.id==='followBtn'){
+      if(!session) return signIn();
+      if(isF) await sb.from('follows').delete().match({follower_id:session.user.id,following_id:p.id});
+      else await sb.from('follows').insert({follower_id:session.user.id,following_id:p.id});
+      isF?followed.delete(p.id):followed.add(p.id); showProfile(id,own)}
+  };
+}
+function openUser(e){const r=e.target.closest('[data-user]'); if(r){tab='playlists';showProfile(r.dataset.user,!!session&&r.dataset.user===session.user.id)}}
+
+/* ---------- Вкладки ---------- */
+async function nav(name){
+  document.querySelectorAll('nav [data-nav]').forEach(b=>b.classList.toggle('on',b.dataset.nav===name));
+  if(name==='home'){
+    app.innerHTML='<h2>Главная</h2><div>'+CHIPS.map(c=>`<button data-chip="${c}">${c}</button>`).join(' ')+'</div><div id="out"></div><b>Люди</b><div id="ppl">Загрузка...</div>';
+    app.onclick=async e=>{
+      const c=e.target.closest('[data-chip]'); if(c){out.textContent='Загрузка...';out.innerHTML=trackRows(await scSearch(c.dataset.chip));return}
+      openUser(e)};
+    const {data}=await sb.from('profiles').select('id,username,bio').limit(30);
+    ppl.innerHTML=rows(data||[],userRow);
+  }
+  if(name==='lib'){
+    app.onclick=null;
+    if(!session){app.innerHTML='<h2>Медиатека</h2><div>Войдите, чтобы увидеть свою медиатеку.</div>';return}
+    tab='playlists'; showProfile(session.user.id,true);
+  }
+  if(name==='search'){
+    app.innerHTML='<h2>Поиск</h2><input type="text" id="q" placeholder="Треки и люди"><div id="res"></div>';
+    app.onclick=openUser;
+    let tm2; q.oninput=()=>{clearTimeout(tm2);tm2=setTimeout(async()=>{
+      const s=q.value.trim(); if(!s){res.innerHTML='';return}
+      res.textContent='Поиск...';
+      const [tr,u]=await Promise.all([scSearch(s),sb.from('profiles').select('id,username,bio').ilike('username','%'+s+'%').limit(10)]);
+      res.innerHTML='<b>Треки</b>'+trackRows(tr)+'<b>Люди</b>'+rows(u.data||[],userRow)},500)};
+  }
+}
+
+async function signIn(){await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.href.split('#')[0]}})}
+authBtn.onclick=async()=>{if(session){await sb.auth.signOut();session=null;authBtn.textContent='Войти через Google';nav('home')}else signIn()};
+document.querySelector('nav .t').onclick=e=>{const b=e.target.closest('[data-nav]'); if(b)nav(b.dataset.nav)};
+(async()=>{
+  const {data}=await sb.auth.getSession(); session=data.session;
+  sb.auth.onAuthStateChange((_e,s)=>{session=s});
+  if(session) authBtn.textContent='Выйти';
+  nav('home');
+})();
+</script>
+</body>
+</html>
