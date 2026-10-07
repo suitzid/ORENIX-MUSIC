@@ -4,33 +4,34 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0d1512">
-<title>Orenix Music v0.4.1</title>
-<link rel="stylesheet" href="/style.css?v=0.4.1">
+<title>Orenix Music v0.4.2</title>
+<link rel="stylesheet" href="/style.css?v=0.4.2">
 </head>
 <body>
 <div id="tb"></div>
 <div id="gi"><img src="/logo.png" alt="Orenix"><span>music</span></div>
 <main id="app"></main>
 
-<div id="mp" hidden><div id="pb"><i id="pf"></i></div><img id="mpc" class="cov" alt=""><div class="t"><b id="np"></b><small id="na"></small></div><button class="ib" id="lk">♥</button><button class="ib" id="pp">▶</button><button class="ib" id="pn">▶▶</button></div>
+<div id="mp" hidden><img id="mpc" class="cov" alt=""><div class="t"><b id="np"></b><small id="na"></small></div><button class="pb2" id="lk" aria-label="Нравится"></button><button class="pb2 main" id="pp" aria-label="Играть"></button><button class="pb2" id="stp" aria-label="Стоп"></button></div>
 
 <div class="nav"><div class="nav-island" id="ni"><span class="nav-ind"></span>
   <button class="nav-btn active" data-go="home" aria-label="Главная"><svg class="icon" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg></button>
   <button class="nav-btn" data-go="lib" aria-label="Медиатека"><svg class="icon" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></button>
-  <button class="nav-btn" data-go="search" aria-label="Поиск"><svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></button>
   <button class="nav-btn" data-go="profile" aria-label="Профиль"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg></button>
+  <button class="nav-btn" data-go="search" aria-label="Поиск"><svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></button>
 </div></div>
 <div id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsmediatags@3.9.7/dist/jsmediatags.min.js"></script>
 <script>
-const VERSION='v0.4.1';
-const sb=window.supabase.createClient('https://pehcelgdqtekkknpqvaa.supabase.co','sb_publishable_0rAsicZ1ZzIC2qO6dJ-saQ_XBmlxVPc');
+const VERSION='v0.4.2';
+const SB_URL='https://pehcelgdqtekkknpqvaa.supabase.co',SB_KEY='sb_publishable_0rAsicZ1ZzIC2qO6dJ-saQ_XBmlxVPc';
+const sb=window.supabase.createClient(SB_URL,SB_KEY);
 const $=id=>document.getElementById(id), MAX=7*1024*1024;
 const BLANK='data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
 const AWARDS=[[1,'Первый день'],[7,'Неделя'],[30,'Месяц'],[100,'100 дней'],[365,'Год']];
-let S=null, admin=false, view='home', L=[], MORE={}, queue=[], qi=-1, coverFile=null, PICK=new Set();
+let ME=null; const LIKED=new Set(); let S=null, admin=false, view='home', L=[], MORE={}, queue=[], qi=-1, coverFile=null, PICK=new Set();
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const soon=()=>toast('Скоро');
 function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('on'),2200)}
@@ -38,9 +39,19 @@ function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');clear
 /* ---------- иконки, кэш обложек, общие куски ---------- */
 const I={set:'<path d="M4 7h9M17 7h3M4 12h3M11 12h9M4 17h11M19 17h1"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="17" r="2"/>',
   bell:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.9 1.9 0 0 0 3.4 0"/>',plus:'<path d="M12 5v14M5 12h14"/>',
-  back:'<path d="M15 5l-7 7 7 7"/>',more:'<path d="M9 5l7 7-7 7"/>',dir:'<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>'};
-const ic=n=>`<svg class="icon" viewBox="0 0 24 24">${I[n]}</svg>`;
-const hd=r=>`<div class="hd"><button class="ib" data-soon>${ic('set')}</button>${r?`<button class="ib" data-plus>${ic('plus')}</button>`:`<button class="ib" data-soon>${ic('bell')}</button>`}</div>`;
+  back:'<path d="M15 5l-7 7 7 7"/>',
+  dots:'<circle cx="5" cy="12" r="1.7" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.7" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.7" fill="currentColor" stroke="none"/>',
+  next:'<path d="M6 5.5v13l9-6.5z"/><path d="M19 5.5v13"/>',qadd:'<path d="M4 7h12M4 12h8M4 17h8"/><path d="M17 14v6M14 17h6"/>',
+  pladd:'<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 10v6M9 13h6"/>',
+  dl:'<path d="M12 4v11M7 11l5 5 5-5M5 20h14"/>',share:'<path d="M12 15V4M8 8l4-4 4 4"/><path d="M5 13v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/>',
+  trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/>',
+  user:'<circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-7 8-7s8 2.6 8 7"/>',
+  heart:'<path d="M12 20.5s-7.5-4.6-9.3-9.2C1.5 8 3.5 5 6.6 5c2 0 3.5 1.1 5.4 3 1.9-1.9 3.4-3 5.4-3 3.1 0 5.1 3 3.9 6.3-1.8 4.6-9.3 9.2-9.3 9.2z"/>',
+  play:'<path d="M8.5 5.8v12.4a.8.8 0 0 0 1.2.7l10-6.2a.8.8 0 0 0 0-1.4l-10-6.2a.8.8 0 0 0-1.2.7z"/>',
+  pause:'<rect x="6.5" y="5" width="3.8" height="14" rx="1.4"/><rect x="13.7" y="5" width="3.8" height="14" rx="1.4"/>',
+  stop:'<rect x="6" y="6" width="12" height="12" rx="3.2"/>',more:'<path d="M9 5l7 7-7 7"/>',dir:'<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>'};
+const ic=(n,c='')=>`<svg class="icon ${c}" viewBox="0 0 24 24">${I[n]}</svg>`;
+const hd=(o={})=>`<div class="hd">${o.set?`<button class="ib" data-soon>${ic('set')}</button>`:o.title?`<h1 class="ht">${o.title}</h1>`:'<span></span>'}${o.plus?`<button class="ib" data-plus>${ic('plus')}</button>`:`<button class="ib" data-soon>${ic('bell')}</button>`}</div>`;
 async function cached(img){const u=img.dataset.src; if(!u){img.src=BLANK;return}
   try{const c=await caches.open('orx-covers');let r=await c.match(u);if(!r){await c.add(u);r=await c.match(u)}img.src=URL.createObjectURL(await r.blob())}catch(e){img.src=u}}
 const hydrate=r=>r.querySelectorAll('img[data-src]').forEach(cached);
@@ -49,18 +60,18 @@ const ava=(p,n=40)=>p.avatar_url?`<img class="av" style="width:${n}px;height:${n
 function lst(list,fn){const k=L.push(list)-1;return list.map((x,i)=>fn(x,i,k)).join('')}
 const tcard=(t,i,k)=>`<div class="card" data-l="${k}" data-i="${i}">${cov(t.artwork_url)}<button class="act" data-like>♥</button>${admin?'<button class="act del" data-del>✕</button>':''}<b>${esc(t.title)}</b><small>${esc(t.artist)}</small></div>`;
 const dur=ms=>ms?String(Math.floor(ms/60000)).padStart(2,'0')+':'+String(Math.floor(ms/1000)%60).padStart(2,'0'):'';
-const trk=(t,i,k,rank)=>`<div class="tr" data-l="${k}" data-i="${i}">${rank?`<span class="rk">${i+1}</span>`:''}${cov(t.artwork_url)}<div class="t"><b>${esc(t.title)}</b><small>${esc(t.artist)}</small></div><span class="du">${dur(t.duration_ms)}</span>${admin?'<button class="x" data-del>✕</button>':''}</div>`;
+const trk=(t,i,k,rank)=>`<div class="tr" data-l="${k}" data-i="${i}">${rank?`<span class="rk">${i+1}</span>`:''}${cov(t.artwork_url)}<div class="t"><b>${esc(t.title)}</b><small>${esc(t.artist)}</small></div><span class="du">${dur(t.duration_ms)}</span><button class="x" data-menu aria-label="Меню">${ic('dots')}</button></div>`;
 const trow=(t,i,k)=>trk(t,i,k,0);
 const colsTr=(l,rank)=>l.length?`<div class="tc">${lst(l,(t,i,k)=>trk(t,i,k,rank))}</div>`:'<div class="empty">Пока пусто</div>';
 const pcard=p=>`<div class="card" data-p="${p.id}">${cov(p.cover_url)}<b>${esc(p.title)}</b><small>плейлист</small></div>`;
 const prow=p=>`<div class="row" data-p="${p.id}">${cov(p.cover_url)}<div class="t"><b>${esc(p.title)}</b><small>плейлист</small></div></div>`;
 const urow=u=>`<div class="row" data-u="${u.id}">${ava(u,48)}<div class="t"><b>${esc(u.username)}</b><small>${esc(u.bio||'')}</small></div></div>`;
 const car=(l,fn)=>l.length?`<div class="hs">${lst(l,fn)}</div>`:'<div class="empty">Пока пусто</div>';
-const sec=(t,body,more)=>`<section class="sec"><div class="sh"><h2>${t}</h2>${more?`<button class="ib" data-more="${more}">${ic('more')}</button>`:''}</div>${body}</section>`;
+const sec=(t,body,more,extra)=>`<section class="sec"><div class="sh"><h2>${t}</h2><span class="shb">${extra||''}${more?`<button class="ib" data-more="${more}">${ic('more')}</button>`:''}</span></div>${body}</section>`;
 function openOv(title,html,right=''){const el=document.createElement('div');el.className='ov';
   el.innerHTML=`<div class="ovh"><button class="ib" data-back>${ic('back')}</button><h2>${esc(title)}</h2>${right||'<span style="width:38px"></span>'}</div>${html}`;
   el.close=()=>{el.remove();el.onclose&&el.onclose()};document.body.appendChild(el);hydrate(el);return el}
-function sheet(html){const sh=document.createElement('div'),d=document.createElement('div');sh.className='shade';d.className='sheet';d.innerHTML=html;
+function sheet(html,cls=''){const sh=document.createElement('div'),d=document.createElement('div');sh.className='shade';d.className='sheet '+cls;d.innerHTML=html;
   const close=()=>{sh.remove();d.remove()};sh.onclick=close;d.close=close;document.body.append(sh,d);hydrate(d);return d}
 const openList=(t,tr,rank)=>openOv(t,lst(tr,(x,i,k)=>trk(x,i,k,rank))||'<div class="empty">Пока пусто</div>');
 const needLogin=()=>{app.innerHTML=hd()+'<div class="pad"><p class="empty" style="padding:0 0 12px">Войдите, чтобы пользоваться этим разделом.</p><button class="btn pri" data-signin>Войти через Google</button></div>'};
@@ -68,25 +79,26 @@ const signIn=()=>sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:
 
 /* ---------- плеер ---------- */
 const au=new Audio();
-au.ontimeupdate=()=>{pf.style.width=(au.currentTime/(au.duration||1)*100)+'%'};
-$('pb').onclick=e=>{const r=$('pb').getBoundingClientRect();au.currentTime=au.duration*(e.clientX-r.left)/r.width};
 au.onended=()=>step(1);au.onerror=()=>step(1);
-au.onplay=()=>pp.textContent='⏸';au.onpause=()=>pp.textContent='▶';
-pp.onclick=()=>au.paused?au.play():au.pause();pn.onclick=()=>step(1);lk.onclick=()=>queue[qi]&&like(queue[qi]);
+au.onplay=()=>pp.innerHTML=ic('pause','f');au.onpause=()=>pp.innerHTML=ic('play','f');
+pp.onclick=()=>au.paused?au.play():au.pause();stp.onclick=()=>{au.pause();au.currentTime=0};lk.onclick=()=>queue[qi]&&like(queue[qi]);
 function step(d){const n=qi+d;if(n>=0&&n<queue.length)play(n)}
+function paintHeart(){lk.classList.toggle('on',!!(queue[qi]&&LIKED.has(queue[qi].id)))}
 async function play(i){
   qi=i;const t=queue[i];if(!t||!t.stream_url)return step(1);
-  au.src=t.stream_url;try{await au.play()}catch(e){}
-  $('mp').hidden=false;np.textContent=t.title;na.textContent=t.artist;mpc.dataset.src=t.artwork_url||'';cached(mpc);
+  let src=t.stream_url;
+  try{const c=await caches.open('orx-audio'),r=await c.match(src);if(r)src=URL.createObjectURL(await r.blob())}catch(e){}
+  au.src=src;try{await au.play()}catch(e){}
+  $('mp').hidden=false;np.textContent=t.title;na.textContent=t.artist;mpc.dataset.src=t.artwork_url||'';cached(mpc);paintHeart();
   sb.rpc('play_track',{tid:t.id}).then(()=>{},()=>{});
   if('mediaSession' in navigator){navigator.mediaSession.metadata=new MediaMetadata({title:t.title,artist:t.artist});
     navigator.mediaSession.setActionHandler('nexttrack',()=>step(1));navigator.mediaSession.setActionHandler('previoustrack',()=>step(-1))}
 }
 async function like(t){
-  if(!S)return signIn();
-  const m={user_id:S.user.id,track_id:t.id},{data}=await sb.from('likes').select('track_id').match(m);
-  if(data&&data.length){await sb.from('likes').delete().match(m);toast('Убрано из понравившихся')}
-  else{await sb.from('likes').insert(m);toast('Добавлено в понравившиеся')}
+  if(!S)return signIn();const m={user_id:S.user.id,track_id:t.id};
+  if(LIKED.has(t.id)){await sb.from('likes').delete().match(m);LIKED.delete(t.id);toast('Убрано из понравившихся')}
+  else{await sb.from('likes').insert(m);LIKED.add(t.id);toast('Добавлено в понравившиеся')}
+  paintHeart();
 }
 async function del(t,el){
   if(!confirm('Удалить «'+t.title+'»?'))return;
@@ -119,14 +131,14 @@ async function home(){
 }
 async function lib(){
   if(!S)return needLogin();const uid=S.user.id;
-  app.innerHTML=hd(1)+'<div class="empty">Загрузка...</div>';
+  app.innerHTML=hd({title:'Медиатека',plus:1})+'<div class="empty">Загрузка...</div>';
   const [lk,own,lpl,mine]=await Promise.all([sb.from('likes').select('created_at,tracks(*)').eq('user_id',uid).order('created_at',{ascending:false}),
     sb.from('playlists').select('*').eq('owner_id',uid),sb.from('playlist_likes').select('playlists(*)').eq('user_id',uid),TQ().eq('uploader_id',uid).order('created_at',{ascending:false})]);
   const liked=(lk.data||[]).map(x=>x.tracks).filter(Boolean),mm=mine.data||[],pm=new Map();
   [...(own.data||[]),...(lpl.data||[]).map(x=>x.playlists).filter(Boolean)].forEach(p=>pm.set(p.id,p));const pls=[...pm.values()];
   L=[];MORE.liked=()=>openList('Понравившиеся треки',liked);MORE.mine=()=>openList('Загруженные мной',mm);
   MORE.pls=()=>openOv('Плейлисты',pls.map(prow).join('')||'<div class="empty">Пока пусто</div>');
-  app.innerHTML=hd(1)+sec('Понравившиеся треки',colsTr(liked.slice(0,11)),'liked')+sec('Плейлисты',car(pls.slice(0,10),pcard),pls.length>10?'pls':'')+sec('Загруженные',colsTr(mm.slice(0,11)),'mine');
+  app.innerHTML=hd({title:'Медиатека',plus:1})+sec('Понравившиеся треки',colsTr(liked.slice(0,11)),'liked')+sec('Плейлисты',car(pls.slice(0,10),pcard),pls.length>10?'pls':'',`<button class="ib" data-addpl>${ic('plus')}</button>`)+sec('Загруженные',colsTr(mm.slice(0,11)),'mine');
   hydrate(app);
 }
 function search(){
@@ -138,9 +150,9 @@ function search(){
     res.innerHTML=`<h2>Треки</h2>${lst(t.data||[],trow)||e}<h2>Плейлисты</h2>${(p.data||[]).map(prow).join('')||e}<h2>Пользователи</h2>${(u.data||[]).map(urow).join('')||e}`;hydrate(res)},350)};
 }
 async function profile(){
-  if(!S)return needLogin();app.innerHTML=hd()+'<div class="empty">Загрузка...</div>';
+  if(!S)return needLogin();app.innerHTML=hd({set:1})+'<div class="empty">Загрузка...</div>';
   const s=await stats(S.user.id),aw=AWARDS.filter(a=>s.ds>=a[0]).pop();
-  app.innerHTML=hd()+`<div class="pf">${ava(s,96)}<h1>${esc(s.username)}${s.is_admin?'<span class="vf">✓</span>':''}</h1>
+  app.innerHTML=hd({set:1})+`<div class="pf">${ava(s,96)}<h1>${esc(s.username)}${s.is_admin?'<span class="vf">✓</span>':''}</h1>
     <div class="cnt"><div><b>${s.fr}</b><small>подписчиков</small></div><div><b>${s.fg}</b><small>подписок</small></div></div>
     <span class="chip">★ ${aw?aw[1]:'Пока нет достижений'}</span></div>
     <div class="pad" style="margin-top:18px"><button class="btn" data-pe>Изменить профиль</button><button class="btn" data-st>Статистика</button>
@@ -158,30 +170,65 @@ function autofill(f){
     if(tags.artist)ua.value=tags.artist;if(tags.title)ut.value=tags.title;
     if(tags.picture){coverFile=new Blob([new Uint8Array(tags.picture.data)],{type:tags.picture.format});cp.src=URL.createObjectURL(coverFile)}},onError(){}});
 }
+function upXhr(path,file,type,onp){return new Promise(res=>{
+  const x=new XMLHttpRequest();x.open('POST',SB_URL+'/storage/v1/object/tracks/'+path);
+  x.setRequestHeader('Authorization','Bearer '+S.access_token);x.setRequestHeader('apikey',SB_KEY);x.setRequestHeader('Content-Type',type);
+  x.upload.onprogress=e=>e.lengthComputable&&onp(e.loaded,e.total);
+  x.onload=()=>{let m='';try{m=JSON.parse(x.responseText).message}catch(e){}res(x.status<300?{}:{error:{message:m||('HTTP '+x.status)}})};
+  x.onerror=()=>res({error:{message:'нет соединения'}});x.send(file)})}
 function addTrack(){
-  coverFile=null;
-  const d=sheet(`<h2>Добавить трек</h2><div class="upl"><button class="ib" id="fb">${ic('dir')}</button><div class="pg" id="pg"><span id="st">Выберите файл (до 7 МБ)</span><i></i></div></div>
-    <input type="file" id="uf" accept=".m4a,.mp3,audio/*" hidden><input type="file" id="cf" accept="image/*" hidden>
+  if(!S)return signIn();coverFile=null;
+  const d=sheet(`<h2>Добавить трек</h2><div class="upl"><button class="ib" id="fb">${ic('dir')}</button><div class="pg"><span id="st">Выберите файл (до 7 МБ)</span><div class="bar"><i id="bf"></i></div></div></div>
+    <div class="err" id="er"></div><input type="file" id="uf" accept=".m4a,.mp3,audio/*" hidden><input type="file" id="cf" accept="image/*" hidden>
     <div class="cpick"><img id="cp" class="cov" src="${BLANK}" alt=""><button class="btn" id="cb">Обложка</button></div>
-    <input class="in" id="ua" placeholder="Исполнитель"><input class="in" id="ut" placeholder="Название"><button class="btn pri" id="ub">Загрузить</button>`);
+    <input class="in" id="ua" placeholder="Исполнитель"><input class="in" id="ut" placeholder="Название"><button class="btn pri" id="ub" disabled>Загрузить</button>`);
   fb.onclick=()=>uf.click();cb.onclick=()=>cf.click();
-  uf.onchange=e=>{const f=e.target.files[0];if(!f)return;if(f.size>MAX){e.target.value='';st.textContent='Файл больше 7 МБ';return}st.textContent=f.name+' · '+(f.size/1048576).toFixed(1)+' МБ';autofill(f)};
+  const bad=m=>{er.textContent=m;toast(m);uf.value='';st.textContent='Выберите файл (до 7 МБ)';bf.style.width='0';ub.disabled=true};
+  uf.onchange=e=>{const f=e.target.files[0];if(!f)return;
+    if(f.size>MAX)return bad('Файл слишком большой: '+(f.size/1048576).toFixed(1)+' МБ. Максимум 7 МБ');
+    er.textContent='';bf.style.width='0';st.textContent=f.name+' · '+(f.size/1048576).toFixed(1)+' МБ';ub.disabled=false;autofill(f)};
   cf.onchange=e=>{coverFile=e.target.files[0];if(coverFile)cp.src=URL.createObjectURL(coverFile)};
   ub.onclick=async()=>{
     const f=uf.files[0],ti=ut.value.trim(),ar=ua.value.trim()||'—';
-    if(!f||!ti)return toast('Выберите файл и введите название');if(f.size>MAX)return toast('Файл больше 7 МБ');
-    ub.disabled=true;pg.classList.add('busy');
+    if(!f)return;if(!ti)return toast('Введите название');if(f.size>MAX)return bad('Файл больше 7 МБ');
+    ub.disabled=true;er.textContent='';
+    const fail=m=>{ub.disabled=false;st.textContent='Не удалось загрузить';er.textContent='Ошибка: '+m;toast('Ошибка загрузки')};
     const ext=/\.mp3$/i.test(f.name)?'mp3':'m4a',path=S.user.id+'/'+crypto.randomUUID()+'.'+ext;
-    const u=await sb.storage.from('tracks').upload(path,f,{contentType:ext==='mp3'?'audio/mpeg':'audio/mp4'});
-    const fail=m=>{ub.disabled=false;pg.classList.remove('busy');toast('Ошибка: '+m)};
+    const u=await upXhr(path,f,ext==='mp3'?'audio/mpeg':'audio/mp4',(l,t)=>{const p=Math.round(l/t*100);bf.style.width=p+'%';st.textContent='Загрузка '+p+'% · '+(l/1048576).toFixed(1)+' из '+(t/1048576).toFixed(1)+' МБ'});
     if(u.error)return fail(u.error.message);
+    bf.style.width='100%';st.textContent='Сохраняю...';
     const art=coverFile?await putImage('covers',coverFile):null;
     const dur=await new Promise(r=>{const a=new Audio(URL.createObjectURL(f));a.onloadedmetadata=()=>r(a.duration);a.onerror=()=>r(0)});
     const r=await sb.from('tracks').insert({uploader_id:S.user.id,title:ti,artist:ar,source:'upload',external_id:path,stream_url:sb.storage.from('tracks').getPublicUrl(path).data.publicUrl,artwork_url:art,duration_ms:dur?Math.round(dur*1000):null});
     if(r.error)return fail(r.error.message);
-    d.close();toast('Трек добавлен');go(view);
+    st.textContent='Готово';setTimeout(()=>{d.close();toast('Трек добавлен');go(view)},500);
   };
 }
+function playNow(t){queue=[t];play(0)}
+function openMenu(t,it){
+  const d=sheet(`<div class="mhead">${cov(t.artwork_url)}<div class="t"><b>${esc(t.title)}</b><small>${esc(t.artist)}</small><small>Время: ${dur(t.duration_ms)||'—'}</small></div></div>
+    <button class="mi" data-a="next">${ic('next')}Воспроизвести далее</button><button class="mi" data-a="queue">${ic('qadd')}Добавить в очередь</button>
+    <button class="mi" data-a="pl">${ic('pladd')}Добавить в плейлист</button><button class="mi" data-a="dl">${ic('dl')}Скачать в кэш</button>
+    <button class="mi" data-a="share">${ic('share')}Поделиться</button>${admin?`<button class="mi dng" data-a="del">${ic('trash')}Удалить трек</button>`:''}`,'glass');
+  d.onclick=async e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a;d.close();
+    if(a==='next'){if(qi<0||!queue.length)playNow(t);else{queue.splice(qi+1,0,t);toast('Сыграет следующим')}}
+    if(a==='queue'){if(qi<0||!queue.length)playNow(t);else{queue.push(t);toast('Добавлено в очередь')}}
+    if(a==='pl')pickPlaylist(t);
+    if(a==='dl'){toast('Скачиваю...');try{await (await caches.open('orx-audio')).add(t.stream_url);toast('Трек сохранён в кэш')}catch(x){toast('Не удалось скачать')}}
+    if(a==='share'){if(navigator.share)navigator.share({title:t.title,text:t.title+' — '+t.artist,url:t.stream_url}).catch(()=>{});else{navigator.clipboard.writeText(t.stream_url);toast('Ссылка скопирована')}}
+    if(a==='del')del(t,it);
+  };
+}
+async function pickPlaylist(t){
+  if(!S)return signIn();
+  const {data}=await sb.from('playlists').select('id,title,cover_url').eq('owner_id',S.user.id);
+  const d=sheet(`<h2>В плейлист</h2>${(data||[]).map(p=>`<div class="row" data-pid="${p.id}">${cov(p.cover_url)}<div class="t"><b>${esc(p.title)}</b></div></div>`).join('')||'<div class="empty" style="padding:0">Сначала создайте плейлист в Медиатеке</div>'}`);
+  d.onclick=async e=>{const r=e.target.closest('[data-pid]');if(!r)return;
+    const {count}=await sb.from('playlist_tracks').select('*',{count:'exact',head:true}).eq('playlist_id',r.dataset.pid);
+    const x=await sb.from('playlist_tracks').insert({playlist_id:r.dataset.pid,track_id:t.id,position:count||0});
+    d.close();toast(x.error?(x.error.code==='23505'?'Уже в плейлисте':'Ошибка'):'Добавлено в плейлист')};
+}
+function setNavAvatar(){const b=document.querySelector('[data-go=profile]');b.innerHTML=ME?ava(ME,30):ic('user');hydrate(b)}
 function addPlaylist(){
   coverFile=null;PICK=new Set();
   const d=sheet(`<h2>Новый плейлист</h2><div class="cpick"><img id="cp" class="cov" src="${BLANK}" alt=""><button class="btn" id="cb">Обложка</button></div><input type="file" id="cf" accept="image/*" hidden>
@@ -225,7 +272,7 @@ function editProfile(){
       if(coverFile)u.avatar_url=await putImage('avatars',coverFile);
       const r=await sb.from('profiles').update(u).eq('id',S.user.id);
       if(r.error){sv.disabled=false;return toast(r.error.message.includes('unique')?'Это имя уже занято':'Ошибка: '+r.error.message)}
-      d.close();toast('Сохранено');profile()};
+      ME={...ME,...u};setNavAvatar();d.close();toast('Сохранено');profile()};
   });
 }
 async function showStats(){
@@ -235,22 +282,29 @@ async function showStats(){
 }
 
 /* ---------- события ---------- */
+let lpT=null,lpFired=false,lpX=0,lpY=0;
+document.addEventListener('pointerdown',e=>{lpFired=false;clearTimeout(lpT);const it=e.target.closest('.tr[data-i]');if(!it||e.target.closest('[data-menu]'))return;lpX=e.clientX;lpY=e.clientY;
+  lpT=setTimeout(()=>{lpFired=true;if(navigator.vibrate)navigator.vibrate(12);openMenu(L[+it.dataset.l][+it.dataset.i],it)},480)});
+document.addEventListener('pointermove',e=>{if(Math.hypot(e.clientX-lpX,e.clientY-lpY)>10)clearTimeout(lpT)});
+['pointerup','pointercancel'].forEach(n=>document.addEventListener(n,()=>clearTimeout(lpT)));
+document.addEventListener('contextmenu',e=>{if(e.target.closest('.tr'))e.preventDefault()});
 document.addEventListener('click',e=>{
+  if(lpFired){lpFired=false;return}
   const q=s=>e.target.closest(s);let x;
   if(x=q('[data-go]'))return go(x.dataset.go);
   if(q('[data-soon]'))return soon();
-  if(q('[data-plus]'))return plusMenu();
+  if(q('[data-plus]'))return addTrack();
   if(q('[data-addtrack]'))return addTrack();
   if(q('[data-addpl]'))return addPlaylist();
   if(q('[data-signin]'))return signIn();
   if(q('[data-pe]'))return editProfile();
   if(q('[data-st]'))return showStats();
-  if(q('[data-out]'))return sb.auth.signOut().then(()=>{S=null;admin=false;go('home')});
+  if(q('[data-out]'))return sb.auth.signOut().then(()=>{S=null;admin=false;ME=null;LIKED.clear();setNavAvatar();go('home')});
   if(x=q('[data-more]'))return MORE[x.dataset.more]&&MORE[x.dataset.more]();
   if(x=q('[data-back]'))return x.closest('.ov').close();
   const it=q('[data-i]');
   if(it){const t=L[+it.dataset.l][+it.dataset.i];
-    if(q('[data-like]'))return like(t);if(q('[data-del]'))return del(t,it);
+    if(q('[data-menu]'))return openMenu(t,it);if(q('[data-like]'))return like(t);
     queue=L[+it.dataset.l].slice();return play(+it.dataset.i)}
   if(x=q('[data-p]'))return openPlaylist(x.dataset.p);
   if(x=q('[data-u]'))return openUser(x.dataset.u);
@@ -258,9 +312,11 @@ document.addEventListener('click',e=>{
 (async()=>{
   const {data}=await sb.auth.getSession();S=data.session;
   if(S){
-    const p=await sb.from('profiles').select('is_admin').eq('id',S.user.id).single();admin=!!(p.data&&p.data.is_admin);
+    const [pr,lks]=await Promise.all([sb.from('profiles').select('*').eq('id',S.user.id).single(),sb.from('likes').select('track_id').eq('user_id',S.user.id)]);
+    ME=pr.data;admin=!!(ME&&ME.is_admin);(lks.data||[]).forEach(x=>LIKED.add(x.track_id));
     sb.from('activity_days').upsert({user_id:S.user.id,day:new Date().toISOString().slice(0,10)},{ignoreDuplicates:true}).then(()=>{},()=>{});
   }
+  lk.innerHTML=ic('heart');pp.innerHTML=ic('play','f');stp.innerHTML=ic('stop','f');setNavAvatar();
   go('home');
 })();
 </script>
