@@ -8,386 +8,260 @@
 <link rel="stylesheet" href="/style.css?v=0.4.0">
 </head>
 <body>
-<div id="isl"><img src="data:image/png;base64,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" alt="Orenix"><span>music</span></div>
-<div id="app"></div>
-<div id="mini" hidden>
-  <div class="cv sm" id="mcv"></div>
-  <div class="mt"><b id="np"></b><span id="na"></span></div>
-  <button class="ib" id="ml"></button><button class="ib" id="pv"></button><button class="ib" id="pp"></button><button class="ib" id="pn"></button>
-  <input type="range" id="sk" min="0" max="100" value="0"><span id="tm">0:00</span>
+<div id="tb"></div>
+<div id="gi"><img src="/logo.png" alt="Orenix"><span>music</span></div>
+<main id="app"></main>
+
+<div id="mp" hidden>
+  <img id="mpc" class="cov" alt="">
+  <div class="t"><b id="np"></b><small id="na"></small><input type="range" id="sk" min="0" max="100" value="0"></div>
+  <button class="ib" id="pv">◀</button><button class="ib" id="pp">▶</button><button class="ib" id="pn">▶▶</button>
 </div>
-<div class="nav"><div class="nav-island" id="isle"><span class="nav-ind" id="ind"></span>
-  <button class="nav-btn active" data-nav="home" aria-label="Главная"></button>
-  <button class="nav-btn" data-nav="lib" aria-label="Медиатека"></button>
-  <button class="nav-btn" data-nav="search" aria-label="Поиск"></button>
-  <button class="nav-btn" data-nav="profile" aria-label="Профиль"></button>
+
+<div class="nav"><div class="nav-island" id="ni"><span class="nav-ind"></span>
+  <button class="nav-btn active" data-go="home" aria-label="Главная"><svg class="icon" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg></button>
+  <button class="nav-btn" data-go="lib" aria-label="Медиатека"><svg class="icon" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></button>
+  <button class="nav-btn" data-go="search" aria-label="Поиск"><svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></button>
+  <button class="nav-btn" data-go="profile" aria-label="Профиль"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg></button>
 </div></div>
 <div id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsmediatags@3.9.7/dist/jsmediatags.min.js"></script>
 <script>
 const VERSION='v0.4.0';
 const sb=window.supabase.createClient('https://pehcelgdqtekkknpqvaa.supabase.co','sb_publishable_0rAsicZ1ZzIC2qO6dJ-saQ_XBmlxVPc');
+const $=id=>document.getElementById(id), MAX=7*1024*1024;
+const BLANK='data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
 const AWARDS=[[1,'Первый день'],[7,'Неделя'],[30,'Месяц'],[100,'100 дней'],[365,'Год']];
-const MAX_MB=7, SHELF=11;
-let session=null,isAdmin=false,liked=new Set(),likedPl=new Set(),followed=new Set(),queue=[],qi=-1,R=[],curNav='home',lastView=()=>{};
-
-/* ---------- утилиты ---------- */
+let S=null, admin=false, view='home', L=[], MORE={}, queue=[], qi=-1, coverFile=null, PICK=new Set();
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const $=id=>document.getElementById(id);
-const IC={home:'M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z',lib:'M9 18V5l11-2v13M6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM17 19a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',search:'M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM21 21l-4.3-4.3',profile:'M12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM4 20c0-4.4 3.6-7 8-7s8 2.6 8 7',
-gear:'M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z',
-bell:'M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.9 1.9 0 0 0 3.4 0',plus:'M12 5v14M5 12h14',chev:'M9 6l6 6-6 6',back:'M15 6l-6 6 6 6',folder:'M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z',heart:'M12 20s-7-4.4-9-9a5 5 0 0 1 9-3 5 5 0 0 1 9 3c-2 4.6-9 9-9 9z',x:'M6 6l12 12M18 6L6 18',play:'M7 4l13 8-13 8z',pause:'M8 5v14M16 5v14',prev:'M6 5v14M20 5L9 12l11 7z',next:'M18 5v14M4 5l11 7-11 7z',note:'M9 18V5l11-2v13M6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM17 19a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',check:'M5 12l5 5 9-10'};
-const ic=n=>`<svg class="icon" viewBox="0 0 24 24"><path d="${IC[n]}"/></svg>`;
-document.querySelectorAll('[data-nav]').forEach(b=>b.innerHTML=ic(b.dataset.nav));
-[['ml','heart'],['pv','prev'],['pp','play'],['pn','next']].forEach(([i,n])=>$(i).innerHTML=ic(n));
-let tt;const toast=m=>{const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),1800)};
-const reg=x=>R.push(x)-1;
-const T=x=>({id:x.id,title:x.title,artist:x.artist,url:x.stream_url,path:x.storage_path,owner:x.uploader_id,cover:x.cover_url,plays:x.plays||0});
-const P=x=>({id:x.id,title:x.title,cover:x.cover_url,owner:x.owner_id,priv:x.is_private,n:x.playlist_tracks?.[0]?.count||0});
-const canDel=t=>isAdmin||(session&&t.owner===session.user.id);
-const rd=(d,l)=>`<div class="empty">${l||'Пока пусто'}</div>`;
+const soon=()=>toast('Скоро');
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('on'),2200)}
 
-/* кэш обложек на устройстве (Cache API) */
-async function hydrate(){
-  document.querySelectorAll('img[data-cov]').forEach(async im=>{
-    const u=im.dataset.cov; delete im.dataset.cov;
-    try{const c=await caches.open('orenix-covers-v1');let r=await c.match(u);
-      if(!r){await c.add(new Request(u,{mode:'cors'}));r=await c.match(u)}
-      im.onload=()=>URL.revokeObjectURL(im.src);im.src=URL.createObjectURL(await r.blob())}
-    catch(e){im.src=u}});
-}
-const cover=(u,c='')=>`<div class="cv ${c}">${u?`<img data-cov="${esc(u)}" alt="">`:ic('note')}</div>`;
-const avatar=(p,c='')=>`<div class="av ${c}">${p.avatar_url?`<img data-cov="${esc(p.avatar_url)}" alt="">`:esc((p.username||'?')[0].toUpperCase())}</div>`;
-const render=h=>{R=[];app.innerHTML=h;hydrate();scrollTo(0,0)};
-const bar=(l,r)=>`<div class="bar">${l}${r}</div>`;
-const soon=n=>`<button class="ib" data-soon="Скоро">${ic(n)}</button>`;
-const backBtn=f=>`<button class="ib" data-act="${reg(f)}">${ic('back')}</button>`;
-
-/* ---------- карточки ---------- */
-const tCard=(t,l,i)=>`<div class="card" data-l="${l}" data-i="${i}">${cover(t.cover)}<b>${esc(t.title)}</b><span>${esc(t.artist)}</span></div>`;
-const pCard=p=>`<div class="card" data-pl="${p.id}">${cover(p.cover)}<b>${esc(p.title)}</b><span>${p.n} тр.${p.priv?' · приватный':''}</span></div>`;
-const tRow=(t,l,i,n)=>`<div class="row" data-l="${l}" data-i="${i}">${n?`<em>${n}</em>`:''}${cover(t.cover,'sm')}<div class="mt"><b>${esc(t.title)}</b><span>${esc(t.artist)}${t.plays?' · '+t.plays+' ▶':''}</span></div><button class="ib ${liked.has(t.id)?'on':''}" data-like="${t.id}">${ic('heart')}</button>${canDel(t)?`<button class="ib red" data-del="${l}.${i}">${ic('x')}</button>`:''}</div>`;
-const pRow=p=>`<div class="row" data-pl="${p.id}">${cover(p.cover,'sm')}<div class="mt"><b>${esc(p.title)}</b><span>${p.n} треков${p.priv?' · приватный':''}</span></div></div>`;
-const uRow=u=>`<div class="row" data-user="${u.id}">${avatar(u,'sm')}<div class="mt"><b>${esc(u.username)}</b><span>${esc(u.bio||'')}</span></div></div>`;
-const shelf=(title,body,more)=>`<section><div class="sh"><h3>${title}</h3>${more!=null?`<button class="ib" data-act="${more}">${ic('chev')}</button>`:''}</div><div class="scroll">${body||rd()}</div></section>`;
-const tShelf=(title,arr,more)=>{const l=reg(arr);return shelf(title,arr.map((t,i)=>tCard(t,l,i)).join(''),more)};
-const pShelf=(title,arr,more)=>shelf(title,arr.map(pCard).join(''),more);
-
-/* полноэкранные списки (кнопка ">") */
-function listPage(title,arr,ranked){
-  const prev=lastView, l=reg(arr);
-  render(`<div class="head">${backBtn(prev)}<h2>${esc(title)}</h2></div>${arr.map((t,i)=>tRow(t,l,i,ranked?i+1:0)).join('')||rd()}`);
-}
-function plListPage(title,arr){
-  const prev=lastView;
-  render(`<div class="head">${backBtn(prev)}<h2>${esc(title)}</h2></div>${arr.map(pRow).join('')||rd()}`);
-}
-const openTracks=(title,arr,ranked)=>reg(()=>listPage(title,arr,ranked));
-const openPls=(title,arr)=>reg(()=>plListPage(title,arr));
+/* ---------- иконки, кэш обложек, общие куски ---------- */
+const I={set:'<path d="M4 7h9M17 7h3M4 12h3M11 12h9M4 17h11M19 17h1"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="17" r="2"/>',
+  bell:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.9 1.9 0 0 0 3.4 0"/>',plus:'<path d="M12 5v14M5 12h14"/>',
+  back:'<path d="M15 5l-7 7 7 7"/>',more:'<path d="M9 5l7 7-7 7"/>',dir:'<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>'};
+const ic=n=>`<svg class="icon" viewBox="0 0 24 24">${I[n]}</svg>`;
+const hd=r=>`<div class="hd"><button class="ib" data-soon>${ic('set')}</button>${r?`<button class="ib" data-plus>${ic('plus')}</button>`:`<button class="ib" data-soon>${ic('bell')}</button>`}</div>`;
+async function cached(img){const u=img.dataset.src; if(!u){img.src=BLANK;return}
+  try{const c=await caches.open('orx-covers');let r=await c.match(u);if(!r){await c.add(u);r=await c.match(u)}img.src=URL.createObjectURL(await r.blob())}catch(e){img.src=u}}
+const hydrate=r=>r.querySelectorAll('img[data-src]').forEach(cached);
+const cov=(u,c='cov')=>`<img class="${c}" data-src="${esc(u||'')}" src="${BLANK}" alt="">`;
+const ava=(p,n=40)=>p.avatar_url?`<img class="av" style="width:${n}px;height:${n}px" data-src="${esc(p.avatar_url)}" src="${BLANK}" alt="">`:`<div class="av" style="width:${n}px;height:${n}px;font-size:${n/2.4}px">${esc((p.username||'?')[0].toUpperCase())}</div>`;
+function lst(list,fn){const k=L.push(list)-1;return list.map((x,i)=>fn(x,i,k)).join('')}
+const tcard=(t,i,k)=>`<div class="card" data-l="${k}" data-i="${i}">${cov(t.artwork_url)}<button class="act" data-like>♥</button>${admin?'<button class="act del" data-del>✕</button>':''}<b>${esc(t.title)}</b><small>${esc(t.artist)}</small></div>`;
+const trow=(t,i,k)=>`<div class="row" data-l="${k}" data-i="${i}">${cov(t.artwork_url)}<div class="t"><b>${esc(t.title)}</b><small>${esc(t.artist)}</small></div><button class="ib" data-like>♥</button>${admin?'<button class="ib" data-del style="color:var(--danger)">✕</button>':''}</div>`;
+const pcard=p=>`<div class="card" data-p="${p.id}">${cov(p.cover_url)}<b>${esc(p.title)}</b><small>плейлист</small></div>`;
+const prow=p=>`<div class="row" data-p="${p.id}">${cov(p.cover_url)}<div class="t"><b>${esc(p.title)}</b><small>плейлист</small></div></div>`;
+const urow=u=>`<div class="row" data-u="${u.id}">${ava(u,48)}<div class="t"><b>${esc(u.username)}</b><small>${esc(u.bio||'')}</small></div></div>`;
+const car=(l,fn)=>l.length?`<div class="hs">${lst(l,fn)}</div>`:'<div class="empty">Пока пусто</div>';
+const sec=(t,body,more)=>`<section class="sec"><div class="sh"><h2>${t}</h2>${more?`<button class="ib" data-more="${more}">${ic('more')}</button>`:''}</div>${body}</section>`;
+function openOv(title,html,right=''){const el=document.createElement('div');el.className='ov';
+  el.innerHTML=`<div class="ovh"><button class="ib" data-back>${ic('back')}</button><h2>${esc(title)}</h2>${right||'<span style="width:38px"></span>'}</div>${html}`;
+  el.close=()=>{el.remove();el.onclose&&el.onclose()};document.body.appendChild(el);hydrate(el);return el}
+function sheet(html){const sh=document.createElement('div'),d=document.createElement('div');sh.className='shade';d.className='sheet';d.innerHTML=html;
+  const close=()=>{sh.remove();d.remove()};sh.onclick=close;d.close=close;document.body.append(sh,d);hydrate(d);return d}
+const openList=(t,tr)=>openOv(t,lst(tr,trow));
+const needLogin=()=>{app.innerHTML=hd()+'<div class="pad"><p class="empty" style="padding:0 0 12px">Войдите, чтобы пользоваться этим разделом.</p><button class="btn pri" data-signin>Войти через Google</button></div>'};
+const signIn=()=>sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin}});
 
 /* ---------- плеер ---------- */
 const au=new Audio();
-const fmt=s=>isFinite(s)?Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0'):'0:00';
-au.ontimeupdate=()=>{sk.max=au.duration||100;sk.value=au.currentTime;tm.textContent=fmt(au.currentTime)};
+au.ontimeupdate=()=>{sk.max=au.duration||100;sk.value=au.currentTime};
 sk.oninput=()=>{au.currentTime=sk.value};
-au.onended=()=>step(1);
-au.onplay=()=>pp.innerHTML=ic('pause'); au.onpause=()=>pp.innerHTML=ic('play');
-pp.onclick=()=>au.paused?au.play():au.pause();
-pv.onclick=()=>step(-1); pn.onclick=()=>step(1);
-ml.onclick=()=>queue[qi]&&like(queue[qi].id);
-function step(d){const n=qi+d; if(n>=0&&n<queue.length) play(n)}
-function play(i){
-  qi=i; const t=queue[i]; au.src=t.url;
-  au.play().catch(()=>toast('Не удалось воспроизвести'));
-  mini.hidden=false; np.textContent=t.title; na.textContent=t.artist;
-  mcv.innerHTML=t.cover?`<img data-cov="${esc(t.cover)}" alt="">`:ic('note'); hydrate();
-  ml.classList.toggle('on',liked.has(t.id));
-  sb.rpc('inc_plays',{tid:t.id}); /* счётчик прослушиваний */
-  if('mediaSession' in navigator){
-    navigator.mediaSession.metadata=new MediaMetadata({title:t.title,artist:t.artist});
-    navigator.mediaSession.setActionHandler('nexttrack',()=>step(1));
-    navigator.mediaSession.setActionHandler('previoustrack',()=>step(-1));
-  }
+au.onended=()=>step(1);au.onerror=()=>step(1);
+au.onplay=()=>pp.textContent='⏸';au.onpause=()=>pp.textContent='▶';
+pp.onclick=()=>au.paused?au.play():au.pause();pv.onclick=()=>step(-1);pn.onclick=()=>step(1);
+function step(d){const n=qi+d;if(n>=0&&n<queue.length)play(n)}
+async function play(i){
+  qi=i;const t=queue[i];if(!t||!t.stream_url)return step(1);
+  au.src=t.stream_url;try{await au.play()}catch(e){}
+  $('mp').hidden=false;np.textContent=t.title;na.textContent=t.artist;mpc.dataset.src=t.artwork_url||'';cached(mpc);
+  sb.rpc('play_track',{tid:t.id}).then(()=>{},()=>{});
+  if('mediaSession' in navigator){navigator.mediaSession.metadata=new MediaMetadata({title:t.title,artist:t.artist});
+    navigator.mediaSession.setActionHandler('nexttrack',()=>step(1));navigator.mediaSession.setActionHandler('previoustrack',()=>step(-1))}
 }
-async function like(id){
-  if(!session) return signIn();
-  const on=liked.has(id);
-  const r=on?await sb.from('likes').delete().match({user_id:session.user.id,track_id:id}):await sb.from('likes').upsert({user_id:session.user.id,track_id:id});
-  if(r.error) return toast('Ошибка: '+r.error.message);
-  on?liked.delete(id):liked.add(id);
-  document.querySelectorAll(`[data-like="${id}"]`).forEach(b=>b.classList.toggle('on',!on));
-  if(queue[qi]?.id===id) ml.classList.toggle('on',!on);
+async function like(t){
+  if(!S)return signIn();
+  const m={user_id:S.user.id,track_id:t.id},{data}=await sb.from('likes').select('track_id').match(m);
+  if(data&&data.length){await sb.from('likes').delete().match(m);toast('Убрано из понравившихся')}
+  else{await sb.from('likes').insert(m);toast('Добавлено в понравившиеся')}
 }
-async function del(t){
-  if(!t||!confirm('Удалить трек «'+t.title+'»?')) return;
-  if(t.path) await sb.storage.from('tracks').remove([t.path]);
+async function del(t,el){
+  if(!confirm('Удалить «'+t.title+'»?'))return;
+  await sb.storage.from('tracks').remove([t.external_id]);
   const r=await sb.from('tracks').delete().eq('id',t.id);
-  if(r.error) toast('Ошибка: '+r.error.message);
-  lastView();
+  if(r.error)return toast('Ошибка: '+r.error.message);
+  el.remove();toast('Трек удалён');
 }
 
-/* ---------- шторка ---------- */
-function sheet(h){
-  const s=document.createElement('div'); s.className='sheet'; s.innerHTML=`<div>${h}</div>`;
-  s.onclick=e=>{if(e.target===s) s.remove()}; document.body.appendChild(s); return s;
+/* ---------- данные ---------- */
+const TQ=()=>sb.from('tracks').select('*').eq('source','upload');
+async function stats(id){
+  const c=(t,col)=>sb.from(t).select('*',{count:'exact',head:true}).eq(col,id);
+  const [p,fr,fg,up,lk,ds]=await Promise.all([sb.from('profiles').select('*').eq('id',id).single(),c('follows','following_id'),c('follows','follower_id'),
+    sb.from('tracks').select('*',{count:'exact',head:true}).eq('uploader_id',id).eq('source','upload'),c('likes','user_id'),c('activity_days','user_id')]);
+  return {...p.data,fr:fr.count||0,fg:fg.count||0,up:up.count||0,lk:lk.count||0,ds:ds.count||0};
 }
-
-/* ---------- файлы: ID3, обложки ---------- */
-async function id3(f){ /* название, исполнитель и картинка из mp3 */
-  try{
-    const h=new Uint8Array(await f.slice(0,10).arrayBuffer());
-    if(String.fromCharCode(...h.slice(0,3))!=='ID3') return {};
-    const ss=a=>(a[0]<<21)|(a[1]<<14)|(a[2]<<7)|a[3], v=h[3];
-    const b=new Uint8Array(await f.slice(10,10+ss(h.slice(6,10))).arrayBuffer()), o={};
-    const dec=(a,e)=>new TextDecoder(e===1?'utf-16':e===3?'utf-8':'windows-1251').decode(a).replace(/\0/g,'');
-    let p=0;
-    while(p+10<=b.length){
-      const id=String.fromCharCode(...b.slice(p,p+4)); if(!/^[A-Z0-9]{4}$/.test(id)) break;
-      const sz=v===4?ss(b.slice(p+4,p+8)):new DataView(b.buffer,p+4,4).getUint32(0);
-      const d=b.slice(p+10,p+10+sz); p+=10+sz;
-      if(id==='TIT2') o.title=dec(d.slice(1),d[0]);
-      else if(id==='TPE1') o.artist=dec(d.slice(1),d[0]);
-      else if(id==='APIC'){
-        let i=1; while(d[i]) i++; const mime=dec(d.slice(1,i),0); i+=2;
-        if(d[0]===1||d[0]===2){while(d[i]||d[i+1]) i+=2; i+=2} else {while(d[i]) i++; i++}
-        o.pic=new Blob([d.slice(i)],{type:mime||'image/jpeg'});
-      }
-    }
-    return o;
-  }catch(e){return {}}
-}
-async function shrink(blob,max=600){
-  try{const bm=await createImageBitmap(blob),k=Math.min(1,max/Math.max(bm.width,bm.height));
-    const c=document.createElement('canvas');c.width=bm.width*k;c.height=bm.height*k;c.getContext('2d').drawImage(bm,0,0,c.width,c.height);
-    return await new Promise(r=>c.toBlob(r,'image/jpeg',.85))}catch(e){return blob}
-}
-async function putCover(blob,prefix=''){
-  const path=session.user.id+'/'+prefix+crypto.randomUUID()+'.jpg';
-  const r=await sb.storage.from('covers').upload(path,await shrink(blob,prefix?400:600),{contentType:'image/jpeg'});
-  if(r.error) throw r.error;
-  return sb.storage.from('covers').getPublicUrl(path).data.publicUrl;
-}
-function coverPicker(){ /* общий блок выбора обложки */
-  return `<div class="cvpick"><div class="cv sm" id="cvPrev">${ic('note')}</div><button class="btn" id="cvBtn" style="margin:0;width:auto;flex:1">Обложка</button><input type="file" id="cvFile" accept="image/*" hidden></div>`;
-}
-function bindCover(st){
-  cvBtn.onclick=()=>cvFile.click();
-  cvFile.onchange=()=>setCover(st,cvFile.files[0]);
-}
-function setCover(st,b){ if(!b) return; st.cover=b; cvPrev.innerHTML=`<img src="${URL.createObjectURL(b)}" alt="">`; }
-
-/* ---------- добавить трек ---------- */
-function trackForm(box){
-  box.innerHTML=`<div class="up"><div class="pgb"><i id="pg"></i><span id="fn">Файл не выбран (.mp3 / .m4a, до ${MAX_MB} МБ)</span></div><button class="ib" id="pick">${ic('folder')}</button></div>
-  <input type="file" id="upFile" accept=".mp3,.m4a,audio/*" hidden>
-  <input type="text" id="upTitle" placeholder="Название"><input type="text" id="upArtist" placeholder="Исполнитель">
-  ${coverPicker()}<button class="btn main" id="upBtn">Загрузить</button><div class="msg" id="upMsg"></div>`;
-  const st={file:null,cover:null}, msg=t=>upMsg.textContent=t; bindCover(st);
-  pick.onclick=()=>upFile.click();
-  upFile.onchange=async()=>{
-    const f=upFile.files[0]; if(!f) return;
-    const ext=(f.name.split('.').pop()||'').toLowerCase();
-    if(!['mp3','m4a'].includes(ext)){st.file=null;fn.textContent='Только .mp3 или .m4a';return}
-    if(f.size>MAX_MB*1024*1024){st.file=null;fn.textContent='Файл больше '+MAX_MB+' МБ';return}
-    st.file=f; st.ext=ext; fn.textContent=f.name; pg.style.width='0';
-    const base=f.name.replace(/\.[^.]+$/,'').replace(/_/g,' ').trim(), m=base.split(/\s+[-–—]\s+/);
-    if(m.length>=2){upArtist.value=m[0].trim();upTitle.value=m.slice(1).join(' - ').trim()}
-    if(ext==='mp3'){const t=await id3(f);
-      if(!upTitle.value&&t.title) upTitle.value=t.title;
-      if(!upArtist.value&&t.artist) upArtist.value=t.artist;
-      if(t.pic&&!st.cover) setCover(st,t.pic)}
-  };
-  upBtn.onclick=async()=>{
-    if(!session) return signIn(); const f=st.file; if(!f) return msg('Выберите файл');
-    upBtn.disabled=true; pg.style.width='70%'; msg('Загрузка...');
-    try{
-      const path=session.user.id+'/'+crypto.randomUUID()+'.'+st.ext;
-      const up=await sb.storage.from('tracks').upload(path,f,{contentType:st.ext==='mp3'?'audio/mpeg':'audio/mp4'});
-      if(up.error) throw up.error;
-      const url=sb.storage.from('tracks').getPublicUrl(path).data.publicUrl;
-      const cu=st.cover?await putCover(st.cover):null;
-      const r=await sb.from('tracks').insert({uploader_id:session.user.id,title:upTitle.value.trim()||f.name.replace(/\.[^.]+$/,''),artist:upArtist.value.trim()||'—',source:'upload',stream_url:url,storage_path:path,cover_url:cu});
-      if(r.error){await sb.storage.from('tracks').remove([path]);throw r.error}
-      pg.style.width='100%'; toast('Трек загружен'); box.closest('.sheet').remove(); lastView();
-    }catch(e){msg('Ошибка: '+(e.message||e));pg.style.width='0';upBtn.disabled=false}
-  };
-}
-
-/* ---------- создать плейлист ---------- */
-async function plForm(box){
-  box.innerHTML=`<input type="text" id="plName" placeholder="Название плейлиста">${coverPicker()}
-  <div class="seg"><button class="on" id="pubB">Публичный</button><button id="privB">Приватный</button></div>
-  <button class="btn" id="addT">Добавить трек <span id="addN">0</span></button><button class="btn main" id="plBtn">Создать</button><div class="msg" id="plMsg"></div>`;
-  const st={cover:null,priv:false,sel:new Set()}; bindCover(st);
-  pubB.onclick=()=>{st.priv=false;pubB.className='on';privB.className=''}; privB.onclick=()=>{st.priv=true;privB.className='on';pubB.className=''};
-  addT.onclick=async()=>{
-    const all=((await sb.from('tracks').select('*').eq('source','upload').order('created_at',{ascending:false}).limit(1000)).data||[]).map(T);
-    const s=sheet(`<h2>Все треки</h2>${all.map((t,i)=>`<label class="row">${cover(t.cover,'sm')}<div class="mt"><b>${esc(t.title)}</b><span>${esc(t.artist)}</span></div><input type="checkbox" data-id="${t.id}" ${st.sel.has(t.id)?'checked':''}></label>`).join('')||rd()}<button class="btn main" id="okT">Готово</button>`);
-    s.style.zIndex=65; hydrate();
-    okT.onclick=()=>{st.sel=new Set([...s.querySelectorAll('input:checked')].map(i=>i.dataset.id));addN.textContent=st.sel.size;s.remove()};
-  };
-  plBtn.onclick=async()=>{
-    if(!session) return signIn(); const name=plName.value.trim(); if(!name) return plMsg.textContent='Введите название';
-    plBtn.disabled=true;
-    try{
-      const cu=st.cover?await putCover(st.cover):null;
-      const r=await sb.from('playlists').insert({owner_id:session.user.id,title:name,cover_url:cu,is_private:st.priv}).select().single();
-      if(r.error) throw r.error;
-      if(st.sel.size){const e=await sb.from('playlist_tracks').insert([...st.sel].map(id=>({playlist_id:r.data.id,track_id:id})));if(e.error) throw e.error}
-      toast('Плейлист создан'); box.closest('.sheet').remove(); lastView();
-    }catch(e){plMsg.textContent='Ошибка: '+(e.message||e);plBtn.disabled=false}
-  };
-}
-function plusMenu(){
-  if(!session) return signIn();
-  const s=sheet(`<div class="seg"><button class="on" id="s1">Добавить трек</button><button id="s2">Создать плейлист</button></div><div id="sbox"></div>`);
-  const go=n=>{s1.className=n==1?'on':'';s2.className=n==2?'on':'';n==1?trackForm(sbox):plForm(sbox)};
-  s1.onclick=()=>go(1); s2.onclick=()=>go(2); go(1);
-}
-
-/* ---------- плейлист ---------- */
-async function openPlaylist(id){
-  const prev=lastView;
-  const [p,pt,pl]=await Promise.all([sb.from('playlists').select('*').eq('id',id).single(),sb.from('playlist_tracks').select('tracks(*)').eq('playlist_id',id),sb.from('playlist_likes').select('playlist_id').eq('user_id',session?.user.id||'')]);
-  const d=p.data||{}, arr=(pt.data||[]).map(x=>x.tracks).filter(Boolean).map(T), l=reg(arr), lk=likedPl.has(id);
-  render(`<div class="head">${backBtn(prev)}</div><div class="pad" style="text-align:center">${cover(d.cover_url,'lg')}<h2>${esc(d.title)}</h2>
-  <div style="display:flex;gap:10px;justify-content:center;margin:8px 0"><button class="btn main" style="width:auto;padding:10px 26px" data-playall="${l}.${id}">${ic('play')} Играть</button><button class="ib ${lk?'on':''}" data-plike="${id}">${ic('heart')}</button></div></div>${arr.map((t,i)=>tRow(t,l,i)).join('')||rd()}`);
-  lastView=()=>openPlaylist(id);
-}
-
-/* ---------- профиль ---------- */
-async function loadProfile(id){
-  const [p,pl,tr,lk,fr,fg,ds]=await Promise.all([
-    sb.from('profiles').select('*').eq('id',id).single(),
-    sb.from('playlists').select('id').eq('owner_id',id),
-    sb.from('tracks').select('id').eq('uploader_id',id).eq('source','upload'),
-    sb.from('likes').select('track_id').eq('user_id',id),
-    sb.from('follows').select('*',{count:'exact',head:true}).eq('following_id',id),
-    sb.from('follows').select('*',{count:'exact',head:true}).eq('follower_id',id),
-    sb.from('activity_days').select('*',{count:'exact',head:true}).eq('user_id',id)]);
-  const d=p.data||{};
-  return {...d,id,views:d.profile_views||0,days:ds.count||0,followers:fr.count||0,following:fg.count||0,pls:(pl.data||[]).length,ups:(tr.data||[]).length,lks:(lk.data||[]).length};
-}
-const awardsOf=p=>AWARDS.filter(a=>p.days>=a[0]).map(a=>a[1]);
-async function showProfile(id){
-  lastView=()=>showProfile(id);
-  const own=!!session&&id===session.user.id, p=await loadProfile(id), isF=followed.has(id), aw=awardsOf(p);
-  const sts=reg(()=>showStats(id,p));
-  const btns=own?`<button class="btn" data-act="${reg(()=>editProfile(p))}">Изменить профиль ${ic('chev')}</button><button class="btn" data-act="${sts}">Статистика ${ic('chev')}</button>
-    <button class="btn" data-soon="В разработке">Достижения ${ic('chev')}</button><button class="btn" data-soon="В разработке">Бейджи ${ic('chev')}</button><button class="btn" data-soon="В разработке">Настройки ${ic('chev')}</button><button class="btn" id="outBtn">Выйти</button>`
-    :`<button class="btn main" id="followBtn">${isF?'Вы подписаны':'Подписаться'}</button><button class="btn" data-act="${sts}">Статистика ${ic('chev')}</button>`;
-  render(`${bar('<span></span>','<span></span>')}<div class="pad prof">${avatar(p)}<h2>${esc(p.username||'Без имени')}${p.is_admin?`<span class="vf">${ic('check')}</span>`:''}</h2>
-  <div class="cnt"><div><b>${p.followers}</b>подписчики</div><div><b>${p.following}</b>подписки</div></div>
-  <span class="chip">${aw.length?'★ '+esc(aw[aw.length-1]):'Достижение не выбрано'}</span><div style="margin-top:16px">${btns}</div></div>`);
-  if($('outBtn')) outBtn.onclick=async()=>{await sb.auth.signOut();session=null;isAdmin=false;liked=new Set();nav('home')};
-  if($('followBtn')) followBtn.onclick=async()=>{
-    if(!session) return signIn();
-    if(isF) await sb.from('follows').delete().match({follower_id:session.user.id,following_id:id});
-    else await sb.from('follows').insert({follower_id:session.user.id,following_id:id});
-    isF?followed.delete(id):followed.add(id); showProfile(id)};
-}
-function showStats(id,p){
-  const prev=()=>showProfile(id), aw=awardsOf(p);
-  render(`<div class="head">${backBtn(prev)}<h2>Статистика</h2></div><div class="row">Просмотров профиля: <b>${p.views}</b></div><div class="row">Подписчиков: <b>${p.followers}</b> · Подписок: <b>${p.following}</b></div>
-  <div class="row">Загружено треков: <b>${p.ups}</b> · Лайков: <b>${p.lks}</b> · Плейлистов: <b>${p.pls}</b></div><div class="row">Дней в сервисе: <b>${p.days}</b></div><div class="row">Награды: ${aw.join(', ')||'пока нет'}</div>`);
-}
-function editProfile(p){
-  const s=sheet(`<h2>Изменить профиль</h2><div class="cvpick"><div class="cv sm" id="cvPrev">${p.avatar_url?`<img src="${esc(p.avatar_url)}" alt="">`:ic('profile')}</div><button class="btn" id="cvBtn" style="margin:0;width:auto;flex:1">Сменить аватар</button><input type="file" id="cvFile" accept="image/*" hidden></div>
-  <input type="text" id="edName" placeholder="Имя" value="${esc(p.username||'')}"><button class="btn main" id="edSave">Сохранить</button><div class="msg" id="edMsg"></div>`);
-  const st={}; bindCover(st);
-  edSave.onclick=async()=>{
-    const name=edName.value.trim(); if(!name) return edMsg.textContent='Введите имя';
-    try{const upd={username:name}; if(st.cover) upd.avatar_url=await putCover(st.cover,'avatar-');
-      const r=await sb.from('profiles').update(upd).eq('id',session.user.id); if(r.error) throw r.error;
-      s.remove(); showProfile(session.user.id)}catch(e){edMsg.textContent='Ошибка: '+(e.message||e)}
-  };
-}
+async function shrink(b,max=512){const im=await createImageBitmap(b),k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement('canvas');
+  c.width=im.width*k;c.height=im.height*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);return new Promise(r=>c.toBlob(r,'image/jpeg',.85))}
+async function putImage(bucket,blob){const p=S.user.id+'/'+crypto.randomUUID()+'.jpg',r=await sb.storage.from(bucket).upload(p,await shrink(blob),{contentType:'image/jpeg'});
+  return r.error?null:sb.storage.from(bucket).getPublicUrl(p).data.publicUrl}
 
 /* ---------- экраны ---------- */
-async function nav(name){
-  curNav=name; lastView=()=>nav(name);
-  document.querySelectorAll('[data-nav]').forEach(b=>b.classList.toggle('active',b.dataset.nav===name)); place();
-  if(name==='home'){
-    const [top,pls,nw]=await Promise.all([
-      sb.from('tracks').select('*').eq('source','upload').order('plays',{ascending:false}).limit(100),
-      sb.from('playlists').select('*,playlist_tracks(count)').eq('is_private',false).order('plays',{ascending:false}).limit(10),
-      sb.from('tracks').select('*').eq('source','upload').order('created_at',{ascending:false}).limit(SHELF)]);
-    const t=(top.data||[]).map(T);
-    render(`${bar(soon('gear'),soon('bell'))}`+tShelf('Популярные треки',t.slice(0,SHELF),openTracks('Топ-100',t,true))+pShelf('Популярные плейлисты',(pls.data||[]).map(P))+tShelf('Новые загрузки',(nw.data||[]).map(T)));
-  }
-  if(name==='lib'){
-    if(!session) return render(`${bar(soon('gear'),'<span></span>')}<div class="pad"><h2>Медиатека</h2><div class="empty">Войдите, чтобы увидеть свою медиатеку.</div><button class="btn main" id="inBtn">Войти через Google</button></div>`),inBtn.onclick=signIn;
-    const u=session.user.id;
-    const [lk,own,lpl,up]=await Promise.all([
-      sb.from('likes').select('tracks(*)').eq('user_id',u),
-      sb.from('playlists').select('*,playlist_tracks(count)').eq('owner_id',u),
-      sb.from('playlist_likes').select('playlists(*,playlist_tracks(count))').eq('user_id',u),
-      sb.from('tracks').select('*').eq('uploader_id',u).eq('source','upload').order('created_at',{ascending:false})]);
-    const L=(lk.data||[]).map(x=>x.tracks).filter(Boolean).map(T), U=(up.data||[]).map(T);
-    const PL=[...(own.data||[]),...(lpl.data||[]).map(x=>x.playlists).filter(Boolean)].map(P);
-    render(`${bar(soon('gear'),`<button class="ib" id="plus">${ic('plus')}</button>`)}`+tShelf('Понравившиеся',L.slice(0,SHELF),openTracks('Понравившиеся',L))
-      +pShelf('Плейлисты',PL.slice(0,10),PL.length>10?openPls('Все плейлисты',PL):null)+tShelf('Мои загрузки',U.slice(0,SHELF),openTracks('Мои загрузки',U)));
-    plus.onclick=plusMenu;
-  }
-  if(name==='search'){
-    render(`<div class="head"><h2>Поиск</h2></div><div class="pad"><input type="text" id="q" placeholder="Треки, плейлисты, пользователи"></div><div id="res"></div>`);
-    let t2; q.oninput=()=>{clearTimeout(t2);t2=setTimeout(async()=>{
-      const s=q.value.trim().replace(/[,()%]/g,''); if(!s){res.innerHTML='';return}
-      const [tr,pl,u]=await Promise.all([
-        sb.from('tracks').select('*').eq('source','upload').or(`title.ilike.%${s}%,artist.ilike.%${s}%`).limit(20),
-        sb.from('playlists').select('*,playlist_tracks(count)').eq('is_private',false).ilike('title','%'+s+'%').limit(10),
-        sb.from('profiles').select('id,username,bio,avatar_url').ilike('username','%'+s+'%').limit(10)]);
-      const a=(tr.data||[]).map(T), l=reg(a);
-      res.innerHTML=`<div class="pad"><h3>Треки</h3></div>${a.map((x,i)=>tRow(x,l,i)).join('')||rd()}<div class="pad"><h3>Плейлисты</h3></div>${(pl.data||[]).map(P).map(pRow).join('')||rd()}<div class="pad"><h3>Пользователи</h3></div>${(u.data||[]).map(uRow).join('')||rd()}`;hydrate()},400)};
-  }
-  if(name==='profile'){
-    if(!session) return render(`${bar('<span></span>','<span></span>')}<div class="pad prof"><h2>Профиль</h2><div class="empty">Войдите, чтобы открыть профиль.</div><button class="btn main" id="inBtn">Войти через Google</button></div>`),inBtn.onclick=signIn;
-    showProfile(session.user.id);
-  }
+async function home(){
+  app.innerHTML=hd()+'<div class="empty">Загрузка...</div>';
+  const [top,pl,nw]=await Promise.all([TQ().order('plays',{ascending:false}).limit(100),sb.from('popular_playlists').select('*').limit(10),TQ().order('created_at',{ascending:false}).limit(11)]);
+  L=[];const T=top.data||[];MORE.top=()=>openList('Топ 100 треков',T);
+  app.innerHTML=hd()+sec('Популярные треки',car(T.slice(0,11),tcard),'top')+sec('Популярные плейлисты',car(pl.data||[],pcard))+sec('Новые загрузки',car(nw.data||[],tcard));
+  hydrate(app);
+}
+async function lib(){
+  if(!S)return needLogin();const uid=S.user.id;
+  app.innerHTML=hd(1)+'<div class="empty">Загрузка...</div>';
+  const [lk,own,lpl,mine]=await Promise.all([sb.from('likes').select('created_at,tracks(*)').eq('user_id',uid).order('created_at',{ascending:false}),
+    sb.from('playlists').select('*').eq('owner_id',uid),sb.from('playlist_likes').select('playlists(*)').eq('user_id',uid),TQ().eq('uploader_id',uid).order('created_at',{ascending:false})]);
+  const liked=(lk.data||[]).map(x=>x.tracks).filter(Boolean),mm=mine.data||[],pm=new Map();
+  [...(own.data||[]),...(lpl.data||[]).map(x=>x.playlists).filter(Boolean)].forEach(p=>pm.set(p.id,p));const pls=[...pm.values()];
+  L=[];MORE.liked=()=>openList('Понравившиеся треки',liked);MORE.mine=()=>openList('Загруженные мной',mm);
+  MORE.pls=()=>openOv('Плейлисты',pls.map(prow).join('')||'<div class="empty">Пока пусто</div>');
+  app.innerHTML=hd(1)+sec('Понравившиеся треки',car(liked.slice(0,11),tcard),'liked')+sec('Плейлисты',car(pls.slice(0,10),pcard),pls.length>10?'pls':'')+sec('Загруженные',car(mm.slice(0,11),tcard),'mine');
+  hydrate(app);
+}
+function search(){
+  app.innerHTML=hd()+'<div class="pad"><input class="in" id="q" placeholder="Треки, плейлисты, пользователи"><div id="res"></div></div>';
+  let tm;$('q').oninput=()=>{clearTimeout(tm);tm=setTimeout(async()=>{
+    const s=$('q').value.trim().replace(/[,()%*]/g,' ').trim();if(!s){res.innerHTML='';return}
+    const [t,p,u]=await Promise.all([TQ().or(`title.ilike.%${s}%,artist.ilike.%${s}%`).limit(20),sb.from('playlists').select('*').eq('is_public',true).ilike('title','%'+s+'%').limit(10),sb.from('profiles').select('id,username,bio,avatar_url').ilike('username','%'+s+'%').limit(10)]);
+    L=[];const e='<div class="empty" style="padding:0">Ничего нет</div>';
+    res.innerHTML=`<h2>Треки</h2>${lst(t.data||[],trow)||e}<h2>Плейлисты</h2>${(p.data||[]).map(prow).join('')||e}<h2>Пользователи</h2>${(u.data||[]).map(urow).join('')||e}`;hydrate(res)},350)};
+}
+async function profile(){
+  if(!S)return needLogin();app.innerHTML=hd()+'<div class="empty">Загрузка...</div>';
+  const s=await stats(S.user.id),aw=AWARDS.filter(a=>s.ds>=a[0]).pop();
+  app.innerHTML=hd()+`<div class="pf">${ava(s,96)}<h1>${esc(s.username)}${s.is_admin?'<span class="vf">✓</span>':''}</h1>
+    <div class="cnt"><div><b>${s.fr}</b><small>подписчиков</small></div><div><b>${s.fg}</b><small>подписок</small></div></div>
+    <span class="chip">★ ${aw?aw[1]:'Пока нет достижений'}</span></div>
+    <div class="pad" style="margin-top:18px"><button class="btn" data-pe>Изменить профиль</button><button class="btn" data-st>Статистика</button>
+    <button class="btn" data-soon>Достижения</button><button class="btn" data-soon>Бейджи</button><button class="btn" data-soon>Настройки</button><button class="btn dng" data-out>Выйти</button></div>`;
+  hydrate(app);
+}
+const go=n=>{view=n;document.querySelectorAll('.nav-btn').forEach((b,i)=>{const a=b.dataset.go===n;b.classList.toggle('active',a);if(a)$('ni').style.setProperty('--i',i)});scrollTo(0,0);({home,lib,search,profile})[n]()};
+
+/* ---------- шторки и оверлеи ---------- */
+function plusMenu(){const d=sheet('<button class="btn" data-addtrack>Добавить трек</button><button class="btn" data-addpl>Создать плейлист</button>');d.onclick=()=>d.close()}
+function autofill(f){
+  const m=f.name.replace(/\.[^.]+$/,'').split(/\s[-–—]\s/);
+  if(m.length>1){ua.value=m[0].trim();ut.value=m.slice(1).join(' - ').trim()}
+  if(window.jsmediatags)jsmediatags.read(f,{onSuccess:({tags})=>{
+    if(tags.artist)ua.value=tags.artist;if(tags.title)ut.value=tags.title;
+    if(tags.picture){coverFile=new Blob([new Uint8Array(tags.picture.data)],{type:tags.picture.format});cp.src=URL.createObjectURL(coverFile)}},onError(){}});
+}
+function addTrack(){
+  coverFile=null;
+  const d=sheet(`<h2>Добавить трек</h2><div class="upl"><button class="ib" id="fb">${ic('dir')}</button><div class="pg" id="pg"><span id="st">Выберите файл (до 7 МБ)</span><i></i></div></div>
+    <input type="file" id="uf" accept=".m4a,.mp3,audio/*" hidden><input type="file" id="cf" accept="image/*" hidden>
+    <div class="cpick"><img id="cp" class="cov" src="${BLANK}" alt=""><button class="btn" id="cb">Обложка</button></div>
+    <input class="in" id="ua" placeholder="Исполнитель"><input class="in" id="ut" placeholder="Название"><button class="btn pri" id="ub">Загрузить</button>`);
+  fb.onclick=()=>uf.click();cb.onclick=()=>cf.click();
+  uf.onchange=e=>{const f=e.target.files[0];if(!f)return;if(f.size>MAX){e.target.value='';st.textContent='Файл больше 7 МБ';return}st.textContent=f.name+' · '+(f.size/1048576).toFixed(1)+' МБ';autofill(f)};
+  cf.onchange=e=>{coverFile=e.target.files[0];if(coverFile)cp.src=URL.createObjectURL(coverFile)};
+  ub.onclick=async()=>{
+    const f=uf.files[0],ti=ut.value.trim(),ar=ua.value.trim()||'—';
+    if(!f||!ti)return toast('Выберите файл и введите название');if(f.size>MAX)return toast('Файл больше 7 МБ');
+    ub.disabled=true;pg.classList.add('busy');
+    const ext=/\.mp3$/i.test(f.name)?'mp3':'m4a',path=S.user.id+'/'+crypto.randomUUID()+'.'+ext;
+    const u=await sb.storage.from('tracks').upload(path,f,{contentType:ext==='mp3'?'audio/mpeg':'audio/mp4'});
+    const fail=m=>{ub.disabled=false;pg.classList.remove('busy');toast('Ошибка: '+m)};
+    if(u.error)return fail(u.error.message);
+    const art=coverFile?await putImage('covers',coverFile):null;
+    const r=await sb.from('tracks').insert({uploader_id:S.user.id,title:ti,artist:ar,source:'upload',external_id:path,stream_url:sb.storage.from('tracks').getPublicUrl(path).data.publicUrl,artwork_url:art});
+    if(r.error)return fail(r.error.message);
+    d.close();toast('Трек добавлен');go(view);
+  };
+}
+function addPlaylist(){
+  coverFile=null;PICK=new Set();
+  const d=sheet(`<h2>Новый плейлист</h2><div class="cpick"><img id="cp" class="cov" src="${BLANK}" alt=""><button class="btn" id="cb">Обложка</button></div><input type="file" id="cf" accept="image/*" hidden>
+    <input class="in" id="pn2" placeholder="Название"><select class="in" id="pr"><option value="1">Публичный</option><option value="0">Приватный</option></select>
+    <button class="btn" id="pk">Добавить трек</button><button class="btn pri" id="pc">Создать</button>`);
+  cb.onclick=()=>cf.click();cf.onchange=e=>{coverFile=e.target.files[0];if(coverFile)cp.src=URL.createObjectURL(coverFile)};
+  pk.onclick=async()=>{const {data}=await TQ().order('created_at',{ascending:false}).limit(300),tr=data||[];
+    const ov=openOv('Выберите треки',tr.map((t,i)=>`<div class="row pick${PICK.has(t.id)?' sel':''}" data-pick="${i}">${cov(t.artwork_url)}<div class="t"><b>${esc(t.title)}</b><small>${esc(t.artist)}</small></div></div>`).join('')||'<div class="empty">В базе пока нет треков</div>');
+    ov.onclick=e=>{const r=e.target.closest('[data-pick]');if(!r)return;const id=tr[+r.dataset.pick].id;PICK.has(id)?PICK.delete(id):PICK.add(id);r.classList.toggle('sel')};
+    ov.onclose=()=>{pk.textContent='Добавить трек'+(PICK.size?' ('+PICK.size+')':'')}};
+  pc.onclick=async()=>{const ti=pn2.value.trim();if(!ti)return toast('Введите название');pc.disabled=true;
+    const cvr=coverFile?await putImage('covers',coverFile):null;
+    const {data,error}=await sb.from('playlists').insert({owner_id:S.user.id,title:ti,cover_url:cvr,is_public:pr.value==='1'}).select('id').single();
+    if(error){pc.disabled=false;return toast('Ошибка: '+error.message)}
+    if(PICK.size)await sb.from('playlist_tracks').insert([...PICK].map((t,i)=>({playlist_id:data.id,track_id:t,position:i})));
+    d.close();toast('Плейлист создан');go(view)};
+}
+async function openPlaylist(id){
+  const [p,t,lk]=await Promise.all([sb.from('playlists').select('*').eq('id',id).single(),sb.from('playlist_tracks').select('position,tracks(*)').eq('playlist_id',id).order('position'),
+    S?sb.from('playlist_likes').select('*').match({user_id:S.user.id,playlist_id:id}):{data:[]}]);
+  const tr=(t.data||[]).map(x=>x.tracks).filter(Boolean);let on=(lk.data||[]).length>0;
+  const el=openOv(p.data?p.data.title:'Плейлист',lst(tr,trow)||'<div class="empty">В плейлисте пока нет треков</div>',`<button class="ib" id="plk" style="color:var(--accent)">${on?'♥':'♡'}</button>`);
+  el.querySelector('#plk').onclick=async e=>{if(!S)return signIn();const m={user_id:S.user.id,playlist_id:id};
+    on?await sb.from('playlist_likes').delete().match(m):await sb.from('playlist_likes').insert(m);on=!on;e.target.textContent=on?'♥':'♡'};
+}
+async function openUser(id){
+  const [s,t,f]=await Promise.all([stats(id),TQ().eq('uploader_id',id).order('created_at',{ascending:false}),S?sb.from('follows').select('*').match({follower_id:S.user.id,following_id:id}):{data:[]}]);
+  let on=(f.data||[]).length>0;const mine=S&&S.user.id===id;
+  const el=openOv(s.username,`<div class="pf">${ava(s,80)}<h1>${esc(s.username)}${s.is_admin?'<span class="vf">✓</span>':''}</h1><div class="cnt"><div><b>${s.fr}</b><small>подписчиков</small></div><div><b>${s.fg}</b><small>подписок</small></div></div>
+    ${mine?'':`<button class="btn pri" id="fw">${on?'Вы подписаны':'Подписаться'}</button>`}</div>${lst(t.data||[],trow)}`);
+  const b=el.querySelector('#fw');if(b)b.onclick=async()=>{if(!S)return signIn();const m={follower_id:S.user.id,following_id:id};
+    on?await sb.from('follows').delete().match(m):await sb.from('follows').insert(m);on=!on;b.textContent=on?'Вы подписаны':'Подписаться'};
+}
+function editProfile(){
+  coverFile=null;
+  sb.from('profiles').select('*').eq('id',S.user.id).single().then(({data:p})=>{
+    const d=sheet(`<h2>Изменить профиль</h2><div class="cpick"><div id="ap">${ava(p,72)}</div><button class="btn" id="ab">Сменить фото</button></div><input type="file" id="af" accept="image/*" hidden>
+      <input class="in" id="nm" placeholder="Имя" value="${esc(p.username)}"><button class="btn pri" id="sv">Сохранить</button>`);
+    ab.onclick=()=>af.click();af.onchange=e=>{coverFile=e.target.files[0];if(coverFile)ap.innerHTML=`<img class="av" style="width:72px;height:72px" src="${URL.createObjectURL(coverFile)}">`};
+    sv.onclick=async()=>{const u={username:nm.value.trim()};if(!u.username)return toast('Введите имя');sv.disabled=true;
+      if(coverFile)u.avatar_url=await putImage('avatars',coverFile);
+      const r=await sb.from('profiles').update(u).eq('id',S.user.id);
+      if(r.error){sv.disabled=false;return toast(r.error.message.includes('unique')?'Это имя уже занято':'Ошибка: '+r.error.message)}
+      d.close();toast('Сохранено');profile()};
+  });
+}
+async function showStats(){
+  const s=await stats(S.user.id);
+  sheet(`<h2>Статистика</h2>${[['Просмотров профиля',s.profile_views||0],['Подписчиков',s.fr],['Подписок',s.fg],['Загружено треков',s.up],['Понравившихся',s.lk],['Дней в приложении',s.ds]].map(r=>`<div class="srow"><span>${r[0]}</span><b>${r[1]}</b></div>`).join('')}
+    <div class="srow"><span>Награды</span><b>${AWARDS.filter(a=>s.ds>=a[0]).map(a=>a[1]).join(', ')||'пока нет'}</b></div>`);
 }
 
-/* навбар: плавающая таблетка */
-function place(){
-  const b=document.querySelector('[data-nav].active'); if(!b||!b.offsetWidth) return;
-  isle.style.setProperty('--nav-w',b.offsetWidth+'px'); isle.style.setProperty('--nav-x',b.offsetLeft+'px');
-}
-addEventListener('resize',place); [60,400,1200].forEach(t=>setTimeout(place,t));
-
-/* ---------- клики ---------- */
-document.addEventListener('click',async e=>{
-  const g=s=>e.target.closest(s);
-  let x;
-  if(x=g('[data-soon]')) return toast(x.dataset.soon);
-  if(x=g('[data-act]')) return R[x.dataset.act]();
-  if(x=g('[data-del]')){const [l,i]=x.dataset.del.split('.');return del(R[l][i])}
-  if(x=g('[data-like]')) return like(x.dataset.like);
-  if(x=g('[data-plike]')){
-    if(!session) return signIn(); const id=x.dataset.plike, on=likedPl.has(id);
-    const r=on?await sb.from('playlist_likes').delete().match({user_id:session.user.id,playlist_id:id}):await sb.from('playlist_likes').upsert({user_id:session.user.id,playlist_id:id});
-    if(r.error) return toast('Ошибка: '+r.error.message); on?likedPl.delete(id):likedPl.add(id); return x.classList.toggle('on',!on)}
-  if(x=g('[data-playall]')){const [l,id]=x.dataset.playall.split('.');if(R[l].length){queue=R[l].slice();play(0);sb.rpc('inc_playlist_plays',{pid:id})}return}
-  if(x=g('[data-l]')){queue=R[x.dataset.l].slice();return play(+x.dataset.i)}
-  if(x=g('[data-pl]')) return openPlaylist(x.dataset.pl);
-  if(x=g('[data-user]')) return showProfile(x.dataset.user);
+/* ---------- события ---------- */
+document.addEventListener('click',e=>{
+  const q=s=>e.target.closest(s);let x;
+  if(x=q('[data-go]'))return go(x.dataset.go);
+  if(q('[data-soon]'))return soon();
+  if(q('[data-plus]'))return plusMenu();
+  if(q('[data-addtrack]'))return addTrack();
+  if(q('[data-addpl]'))return addPlaylist();
+  if(q('[data-signin]'))return signIn();
+  if(q('[data-pe]'))return editProfile();
+  if(q('[data-st]'))return showStats();
+  if(q('[data-out]'))return sb.auth.signOut().then(()=>{S=null;admin=false;go('home')});
+  if(x=q('[data-more]'))return MORE[x.dataset.more]&&MORE[x.dataset.more]();
+  if(x=q('[data-back]'))return x.closest('.ov').close();
+  const it=q('[data-i]');
+  if(it){const t=L[+it.dataset.l][+it.dataset.i];
+    if(q('[data-like]'))return like(t);if(q('[data-del]'))return del(t,it);
+    queue=L[+it.dataset.l].slice();return play(+it.dataset.i)}
+  if(x=q('[data-p]'))return openPlaylist(x.dataset.p);
+  if(x=q('[data-u]'))return openUser(x.dataset.u);
 });
-document.querySelector('.nav-island').onclick=e=>{const b=e.target.closest('[data-nav]'); if(b) nav(b.dataset.nav)};
-
-/* ---------- вход ---------- */
-async function signIn(){await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.href.split('#')[0]}})}
-async function loadMe(){
-  isAdmin=false; liked=new Set(); likedPl=new Set(); followed=new Set(); if(!session) return;
-  const u=session.user.id;
-  const [me,lk,lp,fl]=await Promise.all([sb.from('profiles').select('is_admin').eq('id',u).single(),sb.from('likes').select('track_id').eq('user_id',u),sb.from('playlist_likes').select('playlist_id').eq('user_id',u),sb.from('follows').select('following_id').eq('follower_id',u)]);
-  isAdmin=!!(me.data&&me.data.is_admin);
-  (lk.data||[]).forEach(x=>liked.add(x.track_id)); (lp.data||[]).forEach(x=>likedPl.add(x.playlist_id)); (fl.data||[]).forEach(x=>followed.add(x.following_id));
-}
 (async()=>{
-  const {data}=await sb.auth.getSession(); session=data.session;
-  sb.auth.onAuthStateChange((_e,s)=>{session=s});
-  await loadMe(); nav('home');
-  /* новые загрузки обновляются сразу после появления трека */
-  sb.channel('new-tracks').on('postgres_changes',{event:'INSERT',schema:'public',table:'tracks'},()=>{if(curNav==='home'&&document.querySelector('#app .scroll'))nav('home')}).subscribe();
+  const {data}=await sb.auth.getSession();S=data.session;
+  if(S){
+    const p=await sb.from('profiles').select('is_admin').eq('id',S.user.id).single();admin=!!(p.data&&p.data.is_admin);
+    sb.from('activity_days').upsert({user_id:S.user.id,day:new Date().toISOString().slice(0,10)},{ignoreDuplicates:true}).then(()=>{},()=>{});
+  }
+  go('home');
 })();
 </script>
 </body>
