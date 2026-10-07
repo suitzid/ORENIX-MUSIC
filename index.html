@@ -4,19 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0d1512">
-<title>Orenix Music v0.4.0</title>
-<link rel="stylesheet" href="/style.css?v=0.4.0">
+<title>Orenix Music v0.4.1</title>
+<link rel="stylesheet" href="/style.css?v=0.4.1">
 </head>
 <body>
 <div id="tb"></div>
 <div id="gi"><img src="/logo.png" alt="Orenix"><span>music</span></div>
 <main id="app"></main>
 
-<div id="mp" hidden>
-  <img id="mpc" class="cov" alt="">
-  <div class="t"><b id="np"></b><small id="na"></small><input type="range" id="sk" min="0" max="100" value="0"></div>
-  <button class="ib" id="pv">◀</button><button class="ib" id="pp">▶</button><button class="ib" id="pn">▶▶</button>
-</div>
+<div id="mp" hidden><div id="pb"><i id="pf"></i></div><img id="mpc" class="cov" alt=""><div class="t"><b id="np"></b><small id="na"></small></div><button class="ib" id="lk">♥</button><button class="ib" id="pp">▶</button><button class="ib" id="pn">▶▶</button></div>
 
 <div class="nav"><div class="nav-island" id="ni"><span class="nav-ind"></span>
   <button class="nav-btn active" data-go="home" aria-label="Главная"><svg class="icon" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg></button>
@@ -29,7 +25,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsmediatags@3.9.7/dist/jsmediatags.min.js"></script>
 <script>
-const VERSION='v0.4.0';
+const VERSION='v0.4.1';
 const sb=window.supabase.createClient('https://pehcelgdqtekkknpqvaa.supabase.co','sb_publishable_0rAsicZ1ZzIC2qO6dJ-saQ_XBmlxVPc');
 const $=id=>document.getElementById(id), MAX=7*1024*1024;
 const BLANK='data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
@@ -52,7 +48,10 @@ const cov=(u,c='cov')=>`<img class="${c}" data-src="${esc(u||'')}" src="${BLANK}
 const ava=(p,n=40)=>p.avatar_url?`<img class="av" style="width:${n}px;height:${n}px" data-src="${esc(p.avatar_url)}" src="${BLANK}" alt="">`:`<div class="av" style="width:${n}px;height:${n}px;font-size:${n/2.4}px">${esc((p.username||'?')[0].toUpperCase())}</div>`;
 function lst(list,fn){const k=L.push(list)-1;return list.map((x,i)=>fn(x,i,k)).join('')}
 const tcard=(t,i,k)=>`<div class="card" data-l="${k}" data-i="${i}">${cov(t.artwork_url)}<button class="act" data-like>♥</button>${admin?'<button class="act del" data-del>✕</button>':''}<b>${esc(t.title)}</b><small>${esc(t.artist)}</small></div>`;
-const trow=(t,i,k)=>`<div class="row" data-l="${k}" data-i="${i}">${cov(t.artwork_url)}<div class="t"><b>${esc(t.title)}</b><small>${esc(t.artist)}</small></div><button class="ib" data-like>♥</button>${admin?'<button class="ib" data-del style="color:var(--danger)">✕</button>':''}</div>`;
+const dur=ms=>ms?String(Math.floor(ms/60000)).padStart(2,'0')+':'+String(Math.floor(ms/1000)%60).padStart(2,'0'):'';
+const trk=(t,i,k,rank)=>`<div class="tr" data-l="${k}" data-i="${i}">${rank?`<span class="rk">${i+1}</span>`:''}${cov(t.artwork_url)}<div class="t"><b>${esc(t.title)}</b><small>${esc(t.artist)}</small></div><span class="du">${dur(t.duration_ms)}</span>${admin?'<button class="x" data-del>✕</button>':''}</div>`;
+const trow=(t,i,k)=>trk(t,i,k,0);
+const colsTr=(l,rank)=>l.length?`<div class="tc">${lst(l,(t,i,k)=>trk(t,i,k,rank))}</div>`:'<div class="empty">Пока пусто</div>';
 const pcard=p=>`<div class="card" data-p="${p.id}">${cov(p.cover_url)}<b>${esc(p.title)}</b><small>плейлист</small></div>`;
 const prow=p=>`<div class="row" data-p="${p.id}">${cov(p.cover_url)}<div class="t"><b>${esc(p.title)}</b><small>плейлист</small></div></div>`;
 const urow=u=>`<div class="row" data-u="${u.id}">${ava(u,48)}<div class="t"><b>${esc(u.username)}</b><small>${esc(u.bio||'')}</small></div></div>`;
@@ -63,17 +62,17 @@ function openOv(title,html,right=''){const el=document.createElement('div');el.c
   el.close=()=>{el.remove();el.onclose&&el.onclose()};document.body.appendChild(el);hydrate(el);return el}
 function sheet(html){const sh=document.createElement('div'),d=document.createElement('div');sh.className='shade';d.className='sheet';d.innerHTML=html;
   const close=()=>{sh.remove();d.remove()};sh.onclick=close;d.close=close;document.body.append(sh,d);hydrate(d);return d}
-const openList=(t,tr)=>openOv(t,lst(tr,trow));
+const openList=(t,tr,rank)=>openOv(t,lst(tr,(x,i,k)=>trk(x,i,k,rank))||'<div class="empty">Пока пусто</div>');
 const needLogin=()=>{app.innerHTML=hd()+'<div class="pad"><p class="empty" style="padding:0 0 12px">Войдите, чтобы пользоваться этим разделом.</p><button class="btn pri" data-signin>Войти через Google</button></div>'};
 const signIn=()=>sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin}});
 
 /* ---------- плеер ---------- */
 const au=new Audio();
-au.ontimeupdate=()=>{sk.max=au.duration||100;sk.value=au.currentTime};
-sk.oninput=()=>{au.currentTime=sk.value};
+au.ontimeupdate=()=>{pf.style.width=(au.currentTime/(au.duration||1)*100)+'%'};
+$('pb').onclick=e=>{const r=$('pb').getBoundingClientRect();au.currentTime=au.duration*(e.clientX-r.left)/r.width};
 au.onended=()=>step(1);au.onerror=()=>step(1);
 au.onplay=()=>pp.textContent='⏸';au.onpause=()=>pp.textContent='▶';
-pp.onclick=()=>au.paused?au.play():au.pause();pv.onclick=()=>step(-1);pn.onclick=()=>step(1);
+pp.onclick=()=>au.paused?au.play():au.pause();pn.onclick=()=>step(1);lk.onclick=()=>queue[qi]&&like(queue[qi]);
 function step(d){const n=qi+d;if(n>=0&&n<queue.length)play(n)}
 async function play(i){
   qi=i;const t=queue[i];if(!t||!t.stream_url)return step(1);
@@ -114,8 +113,8 @@ async function putImage(bucket,blob){const p=S.user.id+'/'+crypto.randomUUID()+'
 async function home(){
   app.innerHTML=hd()+'<div class="empty">Загрузка...</div>';
   const [top,pl,nw]=await Promise.all([TQ().order('plays',{ascending:false}).limit(100),sb.from('popular_playlists').select('*').limit(10),TQ().order('created_at',{ascending:false}).limit(11)]);
-  L=[];const T=top.data||[];MORE.top=()=>openList('Топ 100 треков',T);
-  app.innerHTML=hd()+sec('Популярные треки',car(T.slice(0,11),tcard),'top')+sec('Популярные плейлисты',car(pl.data||[],pcard))+sec('Новые загрузки',car(nw.data||[],tcard));
+  L=[];const T=top.data||[];MORE.top=()=>openList('Топ 100 треков',T,1);
+  app.innerHTML=hd()+sec('Популярные треки',colsTr(T.slice(0,11),1),'top')+sec('Популярные плейлисты',car(pl.data||[],pcard))+sec('Новые загрузки',colsTr(nw.data||[]));
   hydrate(app);
 }
 async function lib(){
@@ -127,7 +126,7 @@ async function lib(){
   [...(own.data||[]),...(lpl.data||[]).map(x=>x.playlists).filter(Boolean)].forEach(p=>pm.set(p.id,p));const pls=[...pm.values()];
   L=[];MORE.liked=()=>openList('Понравившиеся треки',liked);MORE.mine=()=>openList('Загруженные мной',mm);
   MORE.pls=()=>openOv('Плейлисты',pls.map(prow).join('')||'<div class="empty">Пока пусто</div>');
-  app.innerHTML=hd(1)+sec('Понравившиеся треки',car(liked.slice(0,11),tcard),'liked')+sec('Плейлисты',car(pls.slice(0,10),pcard),pls.length>10?'pls':'')+sec('Загруженные',car(mm.slice(0,11),tcard),'mine');
+  app.innerHTML=hd(1)+sec('Понравившиеся треки',colsTr(liked.slice(0,11)),'liked')+sec('Плейлисты',car(pls.slice(0,10),pcard),pls.length>10?'pls':'')+sec('Загруженные',colsTr(mm.slice(0,11)),'mine');
   hydrate(app);
 }
 function search(){
@@ -177,7 +176,8 @@ function addTrack(){
     const fail=m=>{ub.disabled=false;pg.classList.remove('busy');toast('Ошибка: '+m)};
     if(u.error)return fail(u.error.message);
     const art=coverFile?await putImage('covers',coverFile):null;
-    const r=await sb.from('tracks').insert({uploader_id:S.user.id,title:ti,artist:ar,source:'upload',external_id:path,stream_url:sb.storage.from('tracks').getPublicUrl(path).data.publicUrl,artwork_url:art});
+    const dur=await new Promise(r=>{const a=new Audio(URL.createObjectURL(f));a.onloadedmetadata=()=>r(a.duration);a.onerror=()=>r(0)});
+    const r=await sb.from('tracks').insert({uploader_id:S.user.id,title:ti,artist:ar,source:'upload',external_id:path,stream_url:sb.storage.from('tracks').getPublicUrl(path).data.publicUrl,artwork_url:art,duration_ms:dur?Math.round(dur*1000):null});
     if(r.error)return fail(r.error.message);
     d.close();toast('Трек добавлен');go(view);
   };
