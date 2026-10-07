@@ -98,3 +98,22 @@ small{color:var(--text-secondary)}
 .nav-btn::after{content:attr(aria-label);font-size:10px;font-weight:600;line-height:1;color:#9aa5a0;transition:color .3s}
 .nav-btn.active svg,.nav-btn.active::after{color:var(--accent)}
 .nav-btn.active svg{transform:scale(1.1)}.nav-btn:active{transform:scale(.92)}
+
+/* v0.4.1: треки колонками по 3, как в референсе */
+.tc{display:grid;grid-template-rows:repeat(3,auto);grid-auto-flow:column;grid-auto-columns:calc(100vw - 64px);gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding:0 16px 4px;scrollbar-width:none}
+.tc::-webkit-scrollbar{display:none}
+.tc .tr{scroll-snap-align:start}
+.tr{display:flex;align-items:center;gap:12px;min-width:0;cursor:pointer}
+.tr:active{opacity:.7}
+.tr .cov{width:56px;height:56px;border-radius:14px;flex:none}
+.tr .t{flex:1;min-width:0}
+.tr .t b,.tr .t small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tr .t b{font-size:16px;font-weight:600}.tr .t small{font-size:14px}
+.tr .du{font-size:14px;color:var(--text-secondary);font-variant-numeric:tabular-nums}
+.tr .rk{width:22px;text-align:center;font-weight:600;color:var(--text-secondary)}
+.tr .x{color:var(--danger);font-size:14px;padding:6px}
+.ov .tr{padding:8px 0}
+/* мини-плеер: линия прогресса сверху, ♥, пауза, дальше */
+#pb{position:absolute;top:0;left:20px;right:20px;height:3px;border-radius:2px;background:rgba(255,255,255,.12);overflow:hidden;cursor:pointer}
+#pb i{display:block;height:100%;width:0;background:var(--accent)}
+#mp{padding-top:12px}#lk{color:var(--accent)}
