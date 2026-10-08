@@ -187,7 +187,7 @@ small{color:var(--text-secondary)}
 #mp #mpc{position:absolute;left:50%;top:50%;width:30px;height:30px;margin:-15px 0 0 -15px;border-radius:50%;border:0;z-index:2}
 .vinyl.spin{animation:vspin 5s linear infinite}
 @keyframes vspin{to{transform:rotate(360deg)}}
-#mp.swl>.t{animation:swl .28s ease}#mp.swr>.t{animation:swr .28s ease}
+#mp.mswl>.t{animation:swl .28s ease}#mp.mswr>.t{animation:swr .28s ease}
 @keyframes swl{from{opacity:0;transform:translateX(22px)}to{opacity:1;transform:none}}
 @keyframes swr{from{opacity:0;transform:translateX(-22px)}to{opacity:1;transform:none}}
 /* профиль */
@@ -346,7 +346,16 @@ button.chip2{padding:8px 14px;font-size:14px}
    alter table public.badges add column if not exists image_url text; */
 const VERSION='v0.4.8';
 const SB_URL='https://pehcelgdqtekkknpqvaa.supabase.co',SB_KEY='sb_publishable_0rAsicZ1ZzIC2qO6dJ-saQ_XBmlxVPc';
-const sb=window.supabase.createClient(SB_URL,SB_KEY);
+const idb=(()=>{let p;const open=()=>p||(p=new Promise((res,rej)=>{const r=indexedDB.open('orx',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}));
+  const tx=(m,f)=>open().then(db=>new Promise((res,rej)=>{const t=db.transaction('kv',m),q=f(t.objectStore('kv'));t.oncomplete=()=>res(q.result);t.onerror=()=>rej(t.error)}));
+  return {get:k=>tx('readonly',s=>s.get(k)),set:(k,v)=>tx('readwrite',s=>s.put(v,k)),del:k=>tx('readwrite',s=>s.delete(k))}})();
+/* сессия хранится и в localStorage, и в IndexedDB: если одно очистилось, вход восстановится из другого */
+const STORE={
+  async getItem(k){let v=null;try{v=localStorage.getItem(k)}catch(e){}
+    if(v==null){try{v=await idb.get(k)}catch(e){}if(v!=null){try{localStorage.setItem(k,v)}catch(e){}}}return v==null?null:v},
+  async setItem(k,v){try{localStorage.setItem(k,v)}catch(e){}try{await idb.set(k,v)}catch(e){}},
+  async removeItem(k){try{localStorage.removeItem(k)}catch(e){}try{await idb.del(k)}catch(e){}}};
+const sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{storage:STORE,persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 const $=id=>document.getElementById(id), MAX=7*1024*1024;
 const BLANK='data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
 const AWARDS=[[1,'Первый день'],[7,'Неделя'],[30,'Месяц'],[100,'100 дней'],[365,'Год']];
@@ -428,7 +437,7 @@ function sheet(html,cls=''){const sh=document.createElement('div'),d=document.cr
   const close=()=>{sh.remove();d.remove()};sh.onclick=close;d.close=close;document.body.append(sh,d);hydrate(d);return d}
 const openList=(t,tr,rank)=>openOv(t,lst(tr,(x,i,k)=>trk(x,i,k,rank))||'<div class="empty">Пока пусто</div>');
 const needLogin=()=>{app.innerHTML=hd()+'<div class="pad"><p class="empty" style="padding:0 0 12px">Войдите, чтобы пользоваться этим разделом.</p><button class="btn pri btn-ic" data-signin>'+G_IC+'Войти через Google</button><button class="btn btn-ic" data-orx>'+ORX_IC+'Войти через Orenix</button></div>'};
-const signIn=()=>sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin}});
+const signIn=()=>sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.href.split(/[?#]/)[0]}});
 
 /* ---------- плеер ---------- */
 const au=new Audio();
@@ -646,7 +655,7 @@ function openSettings(){
   if(!S)return signIn();
   const r=(k,i,t)=>`<button class="mrow" data-sec="${k}"><span class="mi-ic">${ic(i)}</span><span>${t}</span>${ic('more')}</button>`;
   const el=openOv('Настройки',r('acc','user','Аккаунт')+r('ntf','bell','Уведомления')+r('prv','badge','Конфиденциальность')+r('cch','dl','Хранилище и автокэш')+(admin?r('adm','award','Админ-панель'):'')+
-    `<div class="ft">orenix music by <a href="https://t.me/orenixpro" target="_blank" rel="noopener">@orenixpro</a> ${VERSION}</div>`);
+    `<div class="ft">orenix music by <a href="https://t.me/orenixpro" target="_blank" rel="noopener">@orenixpro</a> ${VERSION}<br><small>${esc(location.href.split(/[?#]/)[0])}</small></div>`);
   el.addEventListener('click',e=>{const b=e.target.closest('[data-sec]');if(b)({acc:secAccount,ntf:secNotif,prv:secPriv,cch:secCache,adm:openAdmin})[b.dataset.sec]()});
 }
 async function openBadges(){
@@ -712,7 +721,7 @@ function newAch(el,bl){
 (function(){const m=$('mp');let x0=0,y0=0,on=false;
   m.addEventListener('pointerdown',e=>{x0=e.clientX;y0=e.clientY;on=true});
   m.addEventListener('pointerup',e=>{if(!on)return;on=false;const dx=e.clientX-x0,dy=e.clientY-y0;
-    if(Math.abs(dx)>50&&Math.abs(dy)<40){const f=dx<0;m.classList.remove('swl','swr');void m.offsetWidth;m.classList.add(f?'swl':'swr');step(f?1:-1)}});
+    if(Math.abs(dx)>50&&Math.abs(dy)<40){const f=dx<0;m.classList.remove('mswl','mswr');void m.offsetWidth;m.classList.add(f?'mswl':'mswr');step(f?1:-1)}});
   m.addEventListener('pointercancel',()=>{on=false})})();
 /* ---------- уведомления ---------- */
 const ago=t=>{const m=Math.floor((Date.now()-new Date(t))/60000);if(m<1)return 'только что';if(m<60)return m+' мин назад';const h=Math.floor(m/60);if(h<24)return h+' ч назад';const d=Math.floor(h/24);if(d<7)return d+' дн назад';return new Date(t).toLocaleDateString('ru-RU',{day:'numeric',month:'long'})};
@@ -813,25 +822,4 @@ document.addEventListener('click',e=>{
   if(lpFired){lpFired=false;return}
   const q=s=>e.target.closest(s);let x;
   if(x=q('[data-go]'))return go(x.dataset.go);
-  if(q('[data-soon]'))return soon();
-  if(q('[data-bell]'))return openNotifs();
-  if(q('[data-ach]'))return openAch();
-  if(q('[data-bdg]'))return openBadges();
-  if(x=q('[data-sq]')){$('q').value=x.dataset.sq;return $('q').dispatchEvent(new Event('input'))}
-  if(x=q('[data-sx]')){setH(getH().filter(v=>v!==x.dataset.sx));return searchHome()}
-  if(q('[data-sclr]')){setH([]);return searchHome()}
-  if(q('[data-set2]'))return openSettings();
-  if(q('[data-orx]'))return toast('Скоро...');
-  if(q('[data-plus]'))return addTrack();
-  if(q('[data-addtrack]'))return addTrack();
-  if(q('[data-addpl]'))return addPlaylist();
-  if(q('[data-signin]'))return signIn();
-  if(q('[data-pe]'))return editProfile();
-  if(q('[data-st]'))return showStats();
-  if(q('[data-out]'))return sb.auth.signOut().then(()=>{S=null;admin=false;ME=null;LIKED.clear();UNREAD=0;sb.removeAllChannels();setNavAvatar();go('home')});
-  if(x=q('[data-more]'))return MORE[x.dataset.more]&&MORE[x.dataset.more]();
-  if(x=q('[data-back]'))return x.closest('.ov').close();
-  const it=q('[data-i]');
-  if(it){const t=L[+it.dataset.l][+it.dataset.i];
-    if(q('[data-menu]'))return openMenu(t,it);if(q('[data-like]'))return like(t);
-    queue=L[+it.dataset.l].slice();retu
+  if(q('[data-soon]'))return so
