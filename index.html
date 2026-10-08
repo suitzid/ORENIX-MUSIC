@@ -373,7 +373,11 @@ function createClient(url,key,opts){
     const p=new URLSearchParams(location.hash.replace(/^#/,'')),at=p.get('access_token');
     try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}
     if(!at)return null;
-    const r=await fetch(url+'/auth/v1/user',{headers:{apikey:key,Authorization:'Bearer '+at}}),u=await r.json();if(!r.ok)return null;
+    let u=null;
+    try{const r=await fetch(url+'/auth/v1/user',{headers:{apikey:key,Authorization:'Bearer '+at}});if(r.ok)u=await r.json()}catch(e){}
+    if(!u||!u.id){try{const pl=JSON.parse(decodeURIComponent(escape(atob(at.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')))));
+      u={id:pl.sub,email:pl.email,user_metadata:pl.user_metadata||{},app_metadata:pl.app_metadata||{}}}catch(e){u=null}}
+    if(!u||!u.id)return null;
     const ei=+p.get('expires_in')||3600;
     return {access_token:at,refresh_token:p.get('refresh_token'),token_type:p.get('token_type')||'bearer',expires_in:ei,expires_at:+p.get('expires_at')||now()+ei,user:u}}
   const init=()=>initP||(initP=(async()=>{
@@ -448,7 +452,7 @@ window.supabase={createClient:createClient};
 <script>
 /* SQL для бейджей-картинок (выполнить один раз в Supabase):
    alter table public.badges add column if not exists image_url text; */
-const VERSION='v0.4.8';
+const VERSION='v0.4.9';
 const SB_URL='https://pehcelgdqtekkknpqvaa.supabase.co',SB_KEY='sb_publishable_0rAsicZ1ZzIC2qO6dJ-saQ_XBmlxVPc';
 const idb=(()=>{let p;const open=()=>p||(p=new Promise((res,rej)=>{const r=indexedDB.open('orx',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}));
   const tx=(m,f)=>open().then(db=>new Promise((res,rej)=>{const t=db.transaction('kv',m),q=f(t.objectStore('kv'));t.oncomplete=()=>res(q.result);t.onerror=()=>rej(t.error)}));
@@ -584,7 +588,7 @@ async function stats(id){
     TQ().order('plays',{ascending:false}).limit(3),c('user_achievements','user_id')]);
   let pb=null;const pid=p.data&&p.data.pinned_badge_id;if(pid)pb=(await sb.from('badges').select('*').eq('id',pid).maybeSingle()).data;
   const mi=(top.data||[]).findIndex(x=>x.uploader_id===id);
-  return {...p.data,fr:fr.count||0,fg:fg.count||0,up:up.count||0,lk:lk.count||0,ds:ds.count||0,ac:ac.count||0,pb,medal:mi>=0?mi+1:0};
+  return {...(p.data||(S&&id===S.user.id&&ME)||{}),fr:fr.count||0,fg:fg.count||0,up:up.count||0,lk:lk.count||0,ds:ds.count||0,ac:ac.count||0,pb,medal:mi>=0?mi+1:0};
 }
 async function shrink(b,max=512){const im=await createImageBitmap(b),k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement('canvas');
   c.width=im.width*k;c.height=im.height*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);return new Promise(r=>c.toBlob(r,'image/jpeg',.85))}
@@ -634,7 +638,10 @@ const badgeChip=s=>s.pb&&(s.style||{}).bmode!=='off'?`<span class="bchip" style=
 const profCard=(s,edit)=>{const st=s.style||{},bm=st.bmode||'fade',fd=bm==='fade'&&s.pb&&s.pb.image_url;return `<div class="pcard${st.frame==='none'?' nofr':''}${fd?' hasfade':''}${edit?' ed':''}" style="--pa:${esc(st.accent||'#4fd6b4')}">${ava(s,92)}<div class="pc-main"><div class="pc-name"><h1>${esc(s.username)}</h1>${s.is_admin?'<span class="vf">✓</span>':''}${medalOf(s)}</div>${s.bio?`<div class="pc-bio">${esc(s.bio)}</div>`:''}<div class="pc-cnt"><div><b>${s.fr}</b><small>подписчиков</small></div><i></i><div><b>${s.fg}</b><small>подписок</small></div></div></div>${banField(s.pb,edit,bm)}</div>`};
 async function profile(){
   if(!S)return needLogin();app.innerHTML=hd()+'<div class="empty">Загрузка...</div>';
-  const s=await stats(S.user.id);ME={...ME,...s};
+  let s;try{s=await stats(S.user.id)}catch(e){
+    app.innerHTML=hd()+'<div class="pad"><p class="empty" style="padding:0 0 12px">Не удалось загрузить профиль: '+esc(e.message||e)+'</p><button class="btn pri" data-go="profile">Повторить</button><button class="btn" data-out>Выйти</button></div>';return}
+  if(!s.username){const m=S.user.user_metadata||{};s.username=m.name||m.full_name||(S.user.email||'').split('@')[0]||'Пользователь'}
+  ME={...ME,...s};
   const row=(a,i,t,cls)=>`<button class="mrow ${cls||''}" ${a}><span class="mi-ic">${ic(i)}</span><span>${t}</span>${cls?'':ic('more')}</button>`;
   app.innerHTML=hd()+profCard(s)+`<div class="pad" style="margin-top:14px">${row('data-pe','user','Изменить профиль')}${row('data-st','stats','Статистика')}${row('data-ach','award','Достижения')}${row('data-bdg','badge','Бейджи')}${row('data-set2','set','Настройки')}${row('data-out','back','Выйти','dng')}</div>`;
   hydrate(app);
@@ -853,8 +860,4 @@ function setNavAvatar(){const b=document.querySelector('[data-go=profile]');b.in
 function addPlaylist(){
   coverFile=null;PICK=new Set();
   const d=sheet(`<h2>Новый плейлист</h2><div class="cpick"><img id="cp" class="cov" src="${BLANK}" alt=""><button class="btn" id="cb">Обложка</button></div><input type="file" id="cf" accept="image/*" hidden>
-    <input class="in" id="pn2" placeholder="Название"><select class="in" id="pr"><option value="1">Публичный</option><option value="0">Приватный</option></select>
-    <button class="btn" id="pk">Добавить трек</button><button class="btn pri" id="pc">Создать</button>`);
-  cb.onclick=()=>cf.click();cf.onchange=e=>{coverFile=e.target.files[0];if(coverFile)cp.src=URL.createObjectURL(coverFile)};
-  pk.onclick=async()=>{const {data}=await TQ().order('created_at',{ascending:false}).limit(300),tr=data||[];
-    const ov=openOv('Выберите треки',tr.map((t,i)=>`<div class="row pick${PICK.has(t.id)?' sel':''}" data-pick="${i}">${cov(t.artwork_url)}<div class="t"><b>${esc(t.title)}</b><small>${esc(t.artist)}</small></div></div>`).join('')||'<div c
+    <i
