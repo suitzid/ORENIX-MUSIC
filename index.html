@@ -323,22 +323,9 @@ button.chip2{padding:8px 14px;font-size:14px}
 </style>
 </head>
 <body>
-<script>
-/* страж запуска: работает даже если основной скрипт упал */
-(function(){
-  function show(m){var e=document.getElementById('app');if(!e||e.dataset.ok)return;
-    e.innerHTML='<div style="padding:110px 20px 0"><p style="color:#8b968f;margin:0 0 14px">'+m+'</p><button class="btn pri" onclick="location.reload()">Перезагрузить</button><button class="btn" onclick="orxReset()">Сбросить вход и перезапустить</button></div>'}
-  window.orxReset=function(){try{Object.keys(localStorage).filter(function(k){return /^sb-|supabase/.test(k)}).forEach(function(k){localStorage.removeItem(k)})}catch(e){}
-    try{indexedDB.deleteDatabase('orx')}catch(e){}location.replace(location.href.split(/[?#]/)[0])};
-  function why(){return window.supabase?'Приложение не загрузилось.':'Приложение не запустилось. Проверь интернет.'}
-  window.addEventListener('error',function(e){show(why()+'<br><small>'+(e.message||'')+'</small>')});
-  window.orxShow=show;
-  setTimeout(function(){show(why())},30000);
-})();
-</script>
 <div id="tb"></div>
 <div id="gi"><img src="data:image/png;base64,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" alt="Orenix"></div>
-<main id="app"><div id="boot" style="padding:120px 20px;text-align:center;color:#8b968f">Загрузка…</div></main>
+<main id="app"></main>
 
 <div id="dock">
 <div id="mp" hidden><div class="vinyl" id="vn"><img id="mpc" class="cov" alt=""></div><div class="t"><b id="np"></b><small id="na"></small></div><button class="pb2" id="lk" aria-label="Нравится"></button><button class="pb2 main" id="pp" aria-label="Играть"></button><button class="pb2" id="nx" aria-label="Дальше"></button></div>
@@ -353,118 +340,13 @@ button.chip2{padding:8px 14px;font-size:14px}
 <div id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
-<script>
-/* Запасной мини-клиент Supabase: используется ТОЛЬКО если supabase-js с CDN не загрузился: auth (implicit/refresh), PostgREST, storage. Те же вызовы, что у supabase-js. */
-(function(){
-const enc=encodeURIComponent,now=()=>Math.floor(Date.now()/1000);
-function createClient(url,key,opts){
-  const ref=(url.match(/\/\/([^.]+)\./)||[])[1]||'x',SK='sb-'+ref+'-auth-token';
-  const st=(opts&&opts.auth&&opts.auth.storage)||{getItem:async k=>localStorage.getItem(k),setItem:async(k,v)=>localStorage.setItem(k,v),removeItem:async k=>localStorage.removeItem(k)};
-  let sess=null,initP=null,refP=null;const subs=[];
-  const emit=(ev,s)=>subs.forEach(f=>{try{f(ev,s)}catch(e){}});
-  const save=async s=>{sess=s;try{await st.setItem(SK,JSON.stringify(s))}catch(e){}};
-  const drop=async()=>{sess=null;try{await st.removeItem(SK)}catch(e){}};
-  const norm=j=>({access_token:j.access_token,refresh_token:j.refresh_token,token_type:j.token_type||'bearer',expires_in:j.expires_in,expires_at:j.expires_at||now()+(+j.expires_in||3600),user:j.user});
-  async function refresh(rt){
-    const r=await fetch(url+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{apikey:key,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:rt})});
-    const j=await r.json();if(!r.ok||!j.access_token){const e=new Error(j.msg||j.error_description||'refresh failed');e.bad=r.status>=400&&r.status<500;throw e}
-    return norm(j)}
-  async function fromHash(){
-    if(!/access_token=/.test(location.hash))return null;
-    const p=new URLSearchParams(location.hash.replace(/^#/,'')),at=p.get('access_token');
-    try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}
-    if(!at)return null;
-    let u=null;
-    try{const r=await fetch(url+'/auth/v1/user',{headers:{apikey:key,Authorization:'Bearer '+at}});if(r.ok)u=await r.json()}catch(e){}
-    if(!u||!u.id){try{const pl=JSON.parse(decodeURIComponent(escape(atob(at.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')))));
-      u={id:pl.sub,email:pl.email,user_metadata:pl.user_metadata||{},app_metadata:pl.app_metadata||{}}}catch(e){u=null}}
-    if(!u||!u.id)return null;
-    const ei=+p.get('expires_in')||3600;
-    return {access_token:at,refresh_token:p.get('refresh_token'),token_type:p.get('token_type')||'bearer',expires_in:ei,expires_at:+p.get('expires_at')||now()+ei,user:u}}
-  const init=()=>initP||(initP=(async()=>{
-    try{const hs=await fromHash();if(hs){await save(hs);return}}catch(e){}
-    try{const raw=await st.getItem(SK);if(raw)sess=JSON.parse(raw)}catch(e){}})());
-  async function getSession(){
-    await init();
-    if(sess&&sess.expires_at-now()<90){
-      refP=refP||(async()=>{try{const n=await refresh(sess.refresh_token);await save(n);emit('TOKEN_REFRESHED',n)}catch(e){if(e.bad||sess.expires_at<=now())await drop()}finally{refP=null}})();
-      await refP}
-    return {data:{session:sess},error:null}}
-  const token=async()=>{const s=(await getSession()).data.session;return s?s.access_token:key};
-  class Q{
-    constructor(t,raw){this.t=t;this.raw=raw;this.m='GET';this.p=new URLSearchParams();this.body=null;this.ret=false;this.cnt=false;this.res='';this.ord=[];this.one=''}
-    select(c='*',o={}){this.p.set('select',c);if(this.m==='GET'||this.m==='HEAD'){if(o.count)this.cnt=true;if(o.head)this.m='HEAD'}else this.ret=true;return this}
-    insert(b){this.m='POST';this.body=b;return this}
-    update(b){this.m='PATCH';this.body=b;return this}
-    upsert(b,o={}){this.m='POST';this.body=b;this.res=o.ignoreDuplicates?'ignore-duplicates':'merge-duplicates';if(o.onConflict)this.p.set('on_conflict',o.onConflict);return this}
-    delete(){this.m='DELETE';return this}
-    eq(c,v){this.p.append(c,'eq.'+v);return this}
-    ilike(c,v){this.p.append(c,'ilike.'+v);return this}
-    is(c,v){this.p.append(c,'is.'+(v===null?'null':v));return this}
-    in(c,a){this.p.append(c,'in.('+a.map(x=>/[,()"]/.test(x)?'"'+String(x).replace(/"/g,'\\"')+'"':x).join(',')+')');return this}
-    or(s){this.p.append('or','('+s+')');return this}
-    match(o){for(const k in o)this.eq(k,o[k]);return this}
-    order(c,o={}){this.ord.push(c+'.'+(o.ascending===false?'desc':'asc'));return this}
-    limit(n){this.p.set('limit',n);return this}
-    single(){this.one='single';return this}
-    maybeSingle(){this.one='maybe';return this}
-    then(a,b){return this.run().then(a,b)}
-    async run(){
-      const tok=await token();if(this.ord.length)this.p.set('order',this.ord.join(','));
-      const h={apikey:key,Authorization:'Bearer '+tok},pf=[];
-      if(this.cnt)pf.push('count=exact');
-      if(!this.raw&&this.m!=='GET'&&this.m!=='HEAD')pf.push(this.ret?'return=representation':'return=minimal');
-      if(this.res)pf.push('resolution='+this.res);
-      if(pf.length)h.Prefer=pf.join(',');
-      if(this.body!=null)h['Content-Type']='application/json';
-      let r;try{r=await fetch(url+'/rest/v1/'+this.t+'?'+this.p,{method:this.m,headers:h,body:this.body!=null?JSON.stringify(this.body):undefined})}
-      catch(e){return {data:null,error:{message:'нет соединения',code:''},count:null,status:0}}
-      const tx=this.m==='HEAD'?'':await r.text();let d=null;if(tx){try{d=JSON.parse(tx)}catch(e){d=tx}}
-      if(!r.ok)return {data:null,error:{message:(d&&d.message)||tx||('HTTP '+r.status),code:d&&d.code,details:d&&d.details},count:null,status:r.status};
-      let cn=null;const cr=r.headers.get('content-range');if(cr&&cr.includes('/')){const n=cr.split('/')[1];if(n&&n!=='*')cn=+n}
-      if(this.one&&Array.isArray(d)){
-        if(d.length===1)d=d[0];
-        else if(this.one==='maybe'&&d.length===0)d=null;
-        else return {data:null,error:{message:'JSON object requested, multiple (or no) rows returned',code:'PGRST116'},count:cn,status:406}}
-      return {data:d,error:null,count:cn,status:r.status}}
-  }
-  const sfetch=async(m,path,body,extra)=>{const tok=await token();
-    try{const r=await fetch(url+'/storage/v1/'+path,{method:m,headers:{apikey:key,Authorization:'Bearer '+tok,...extra},body});const j=await r.json().catch(()=>({}));
-      return r.ok?{data:j,error:null}:{data:null,error:{message:j.message||j.error||('HTTP '+r.status)}}}catch(e){return {data:null,error:{message:'нет соединения'}}}};
-  const ep=p=>p.split('/').map(enc).join('/');
-  const chan={on(){return chan},subscribe(){return chan}};
-  return {
-    auth:{getSession,
-      onAuthStateChange(cb){subs.push(cb);return {data:{subscription:{unsubscribe(){const i=subs.indexOf(cb);if(i>=0)subs.splice(i,1)}}}}},
-      async signInWithOAuth(o){location.href=url+'/auth/v1/authorize?provider='+enc(o.provider)+'&redirect_to='+enc((o.options&&o.options.redirectTo)||location.href.split(/[?#]/)[0]);return {data:{},error:null}},
-      async signOut(){try{const t=sess&&sess.access_token;if(t)await fetch(url+'/auth/v1/logout',{method:'POST',headers:{apikey:key,Authorization:'Bearer '+t}})}catch(e){}await drop();emit('SIGNED_OUT',null);return {error:null}}},
-    from:t=>new Q(t),
-    rpc:(n,a)=>{const q=new Q('rpc/'+n,true);q.m='POST';q.body=a||{};return q},
-    storage:{from:b=>({
-      upload:(path,blob,o={})=>sfetch('POST','object/'+b+'/'+ep(path),blob,{'Content-Type':o.contentType||blob.type||'application/octet-stream','x-upsert':String(!!o.upsert)}),
-      remove:paths=>sfetch('DELETE','object/'+b,JSON.stringify({prefixes:paths}),{'Content-Type':'application/json'}),
-      getPublicUrl:path=>({data:{publicUrl:url+'/storage/v1/object/public/'+b+'/'+ep(path)}})})},
-    channel:()=>chan,removeAllChannels:async()=>{}
-  };
-}
-if(!(window.supabase&&window.supabase.createClient)){window.supabase={createClient:createClient};window.__miniSB=true}
-})();
-</script>
+<script src="https://cdn.jsdelivr.net/npm/jsmediatags@3.9.7/dist/jsmediatags.min.js"></script>
 <script>
 /* SQL для бейджей-картинок (выполнить один раз в Supabase):
    alter table public.badges add column if not exists image_url text; */
-const VERSION='v0.4.9';
+const VERSION='v0.4.8';
 const SB_URL='https://pehcelgdqtekkknpqvaa.supabase.co',SB_KEY='sb_publishable_0rAsicZ1ZzIC2qO6dJ-saQ_XBmlxVPc';
-const idb=(()=>{let p;const open=()=>p||(p=new Promise((res,rej)=>{const r=indexedDB.open('orx',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}));
-  const tx=(m,f)=>open().then(db=>new Promise((res,rej)=>{const t=db.transaction('kv',m),q=f(t.objectStore('kv'));t.oncomplete=()=>res(q.result);t.onerror=()=>rej(t.error)}));
-  return {get:k=>tx('readonly',s=>s.get(k)),set:(k,v)=>tx('readwrite',s=>s.put(v,k)),del:k=>tx('readwrite',s=>s.delete(k))}})();
-/* сессия хранится и в localStorage, и в IndexedDB: если одно очистилось, вход восстановится из другого */
-const STORE={
-  async getItem(k){let v=null;try{v=localStorage.getItem(k)}catch(e){}
-    if(v==null){try{v=await idb.get(k)}catch(e){}if(v!=null){try{localStorage.setItem(k,v)}catch(e){}}}return v==null?null:v},
-  async setItem(k,v){try{localStorage.setItem(k,v)}catch(e){}try{await idb.set(k,v)}catch(e){}},
-  async removeItem(k){try{localStorage.removeItem(k)}catch(e){}try{await idb.del(k)}catch(e){}}};
-const sb=window.__miniSB?window.supabase.createClient(SB_URL,SB_KEY,{auth:{storage:STORE,persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}):window.supabase.createClient(SB_URL,SB_KEY);
+const sb=window.supabase.createClient(SB_URL,SB_KEY);
 const $=id=>document.getElementById(id), MAX=7*1024*1024;
 const BLANK='data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
 const AWARDS=[[1,'Первый день'],[7,'Неделя'],[30,'Месяц'],[100,'100 дней'],[365,'Год']];
@@ -546,9 +428,7 @@ function sheet(html,cls=''){const sh=document.createElement('div'),d=document.cr
   const close=()=>{sh.remove();d.remove()};sh.onclick=close;d.close=close;document.body.append(sh,d);hydrate(d);return d}
 const openList=(t,tr,rank)=>openOv(t,lst(tr,(x,i,k)=>trk(x,i,k,rank))||'<div class="empty">Пока пусто</div>');
 const needLogin=()=>{app.innerHTML=hd()+'<div class="pad"><p class="empty" style="padding:0 0 12px">Войдите, чтобы пользоваться этим разделом.</p><button class="btn pri btn-ic" data-signin>'+G_IC+'Войти через Google</button><button class="btn btn-ic" data-orx>'+ORX_IC+'Войти через Orenix</button></div>'};
-/* как в рабочей v0.4.6: возврат на origin (его и разрешает Supabase); для file:// — адрес страницы */
-const REDIR=(location.origin&&location.origin!=='null')?location.origin:location.href.split(/[?#]/)[0];
-const signIn=()=>sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:REDIR}});
+const signIn=()=>sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin}});
 
 /* ---------- плеер ---------- */
 const au=new Audio();
@@ -591,7 +471,7 @@ async function stats(id){
     TQ().order('plays',{ascending:false}).limit(3),c('user_achievements','user_id')]);
   let pb=null;const pid=p.data&&p.data.pinned_badge_id;if(pid)pb=(await sb.from('badges').select('*').eq('id',pid).maybeSingle()).data;
   const mi=(top.data||[]).findIndex(x=>x.uploader_id===id);
-  return {...(p.data||(S&&id===S.user.id&&ME)||{}),fr:fr.count||0,fg:fg.count||0,up:up.count||0,lk:lk.count||0,ds:ds.count||0,ac:ac.count||0,pb,medal:mi>=0?mi+1:0};
+  return {...p.data,fr:fr.count||0,fg:fg.count||0,up:up.count||0,lk:lk.count||0,ds:ds.count||0,ac:ac.count||0,pb,medal:mi>=0?mi+1:0};
 }
 async function shrink(b,max=512){const im=await createImageBitmap(b),k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement('canvas');
   c.width=im.width*k;c.height=im.height*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);return new Promise(r=>c.toBlob(r,'image/jpeg',.85))}
@@ -641,15 +521,12 @@ const badgeChip=s=>s.pb&&(s.style||{}).bmode!=='off'?`<span class="bchip" style=
 const profCard=(s,edit)=>{const st=s.style||{},bm=st.bmode||'fade',fd=bm==='fade'&&s.pb&&s.pb.image_url;return `<div class="pcard${st.frame==='none'?' nofr':''}${fd?' hasfade':''}${edit?' ed':''}" style="--pa:${esc(st.accent||'#4fd6b4')}">${ava(s,92)}<div class="pc-main"><div class="pc-name"><h1>${esc(s.username)}</h1>${s.is_admin?'<span class="vf">✓</span>':''}${medalOf(s)}</div>${s.bio?`<div class="pc-bio">${esc(s.bio)}</div>`:''}<div class="pc-cnt"><div><b>${s.fr}</b><small>подписчиков</small></div><i></i><div><b>${s.fg}</b><small>подписок</small></div></div></div>${banField(s.pb,edit,bm)}</div>`};
 async function profile(){
   if(!S)return needLogin();app.innerHTML=hd()+'<div class="empty">Загрузка...</div>';
-  let s;try{s=await stats(S.user.id)}catch(e){
-    app.innerHTML=hd()+'<div class="pad"><p class="empty" style="padding:0 0 12px">Не удалось загрузить профиль: '+esc(e.message||e)+'</p><button class="btn pri" data-go="profile">Повторить</button><button class="btn" data-out>Выйти</button></div>';return}
-  if(!s.username){const m=S.user.user_metadata||{};s.username=m.name||m.full_name||(S.user.email||'').split('@')[0]||'Пользователь'}
-  ME={...ME,...s};
+  const s=await stats(S.user.id);ME={...ME,...s};
   const row=(a,i,t,cls)=>`<button class="mrow ${cls||''}" ${a}><span class="mi-ic">${ic(i)}</span><span>${t}</span>${cls?'':ic('more')}</button>`;
   app.innerHTML=hd()+profCard(s)+`<div class="pad" style="margin-top:14px">${row('data-pe','user','Изменить профиль')}${row('data-st','stats','Статистика')}${row('data-ach','award','Достижения')}${row('data-bdg','badge','Бейджи')}${row('data-set2','set','Настройки')}${row('data-out','back','Выйти','dng')}</div>`;
   hydrate(app);
 }
-const go=n=>{view=n;document.querySelectorAll('.nav-btn').forEach((b,i)=>{const a=b.dataset.go===n;b.classList.toggle('active',a);if(a)$('ni').style.setProperty('--i',i)});scrollTo(0,0);({home,lib,search,profile})[n]();$('app').dataset.ok=1};
+const go=n=>{view=n;document.querySelectorAll('.nav-btn').forEach((b,i)=>{const a=b.dataset.go===n;b.classList.toggle('active',a);if(a)$('ni').style.setProperty('--i',i)});scrollTo(0,0);({home,lib,search,profile})[n]()};
 
 /* ---------- шторки и оверлеи ---------- */
 function plusMenu(){const d=sheet('<button class="btn" data-addtrack>Добавить трек</button><button class="btn" data-addpl>Создать плейлист</button>');d.onclick=()=>d.close()}
@@ -769,7 +646,7 @@ function openSettings(){
   if(!S)return signIn();
   const r=(k,i,t)=>`<button class="mrow" data-sec="${k}"><span class="mi-ic">${ic(i)}</span><span>${t}</span>${ic('more')}</button>`;
   const el=openOv('Настройки',r('acc','user','Аккаунт')+r('ntf','bell','Уведомления')+r('prv','badge','Конфиденциальность')+r('cch','dl','Хранилище и автокэш')+(admin?r('adm','award','Админ-панель'):'')+
-    `<div class="ft">orenix music by <a href="https://t.me/orenixpro" target="_blank" rel="noopener">@orenixpro</a> ${VERSION}<br><small>${esc(location.href.split(/[?#]/)[0])}</small></div>`);
+    `<div class="ft">orenix music by <a href="https://t.me/orenixpro" target="_blank" rel="noopener">@orenixpro</a> ${VERSION}</div>`);
   el.addEventListener('click',e=>{const b=e.target.closest('[data-sec]');if(b)({acc:secAccount,ntf:secNotif,prv:secPriv,cch:secCache,adm:openAdmin})[b.dataset.sec]()});
 }
 async function openBadges(){
@@ -857,4 +734,121 @@ async function openNotifs(){
   const n=(data||[]).filter(x=>allowed().includes(x.type)),empty='<div class="empty" style="padding:24px 0;text-align:center">Пока нет уведомлений</div>';
   const el=openOv('Уведомления',`<div id="nl">${n.map(nrow).join('')||empty}</div>`,`<button class="ib" id="nclr" aria-label="Очистить">${ic('trash')}</button>`);
   el.querySelector('#nclr').onclick=async()=>{if(!n.length)return;await sb.from('notifications').delete().eq('user_id',S.user.id);el.querySelector('#nl').innerHTML=empty;n.length=0;UNREAD=0;paintBell();toast('Уведомления очищены')};
-  if(UNREAD>0){await sb.from('notifications').update({read_at:new Date().toISOString()}).eq('user_id',S
+  if(UNREAD>0){await sb.from('notifications').update({read_at:new Date().toISOString()}).eq('user_id',S.user.id).is('read_at',null);UNREAD=0;paintBell()}
+}
+function setNavAvatar(){const b=document.querySelector('[data-go=profile]');b.innerHTML=ME?ava(ME,30):ic('user');hydrate(b)}
+function addPlaylist(){
+  coverFile=null;PICK=new Set();
+  const d=sheet(`<h2>Новый плейлист</h2><div class="cpick"><img id="cp" class="cov" src="${BLANK}" alt=""><button class="btn" id="cb">Обложка</button></div><input type="file" id="cf" accept="image/*" hidden>
+    <input class="in" id="pn2" placeholder="Название"><select class="in" id="pr"><option value="1">Публичный</option><option value="0">Приватный</option></select>
+    <button class="btn" id="pk">Добавить трек</button><button class="btn pri" id="pc">Создать</button>`);
+  cb.onclick=()=>cf.click();cf.onchange=e=>{coverFile=e.target.files[0];if(coverFile)cp.src=URL.createObjectURL(coverFile)};
+  pk.onclick=async()=>{const {data}=await TQ().order('created_at',{ascending:false}).limit(300),tr=data||[];
+    const ov=openOv('Выберите треки',tr.map((t,i)=>`<div class="row pick${PICK.has(t.id)?' sel':''}" data-pick="${i}">${cov(t.artwork_url)}<div class="t"><b>${esc(t.title)}</b><small>${esc(t.artist)}</small></div></div>`).join('')||'<div class="empty">В базе пока нет треков</div>');
+    ov.onclick=e=>{const r=e.target.closest('[data-pick]');if(!r)return;const id=tr[+r.dataset.pick].id;PICK.has(id)?PICK.delete(id):PICK.add(id);r.classList.toggle('sel')};
+    ov.onclose=()=>{pk.textContent='Добавить трек'+(PICK.size?' ('+PICK.size+')':'')}};
+  pc.onclick=async()=>{const ti=pn2.value.trim();if(!ti)return toast('Введите название');pc.disabled=true;
+    const cvr=coverFile?await putImage('covers',coverFile):null;
+    const {data,error}=await sb.from('playlists').insert({owner_id:S.user.id,title:ti,cover_url:cvr,is_public:pr.value==='1'}).select('id').single();
+    if(error){pc.disabled=false;return toast('Ошибка: '+error.message)}
+    if(PICK.size)await sb.from('playlist_tracks').insert([...PICK].map((t,i)=>({playlist_id:data.id,track_id:t,position:i})));
+    d.close();toast('Плейлист создан');go(view)};
+}
+async function openPlaylist(id){
+  const [p,t,lk]=await Promise.all([sb.from('playlists').select('*').eq('id',id).single(),sb.from('playlist_tracks').select('position,tracks(*)').eq('playlist_id',id).order('position'),
+    S?sb.from('playlist_likes').select('*').match({user_id:S.user.id,playlist_id:id}):{data:[]}]);
+  const tr=(t.data||[]).map(x=>x.tracks).filter(Boolean);let on=(lk.data||[]).length>0;
+  const el=openOv(p.data?p.data.title:'Плейлист',lst(tr,trow)||'<div class="empty">В плейлисте пока нет треков</div>',`<button class="ib" id="plk" style="color:var(--accent)">${on?'♥':'♡'}</button>`);
+  el.querySelector('#plk').onclick=async e=>{if(!S)return signIn();const m={user_id:S.user.id,playlist_id:id};
+    on?await sb.from('playlist_likes').delete().match(m):await sb.from('playlist_likes').insert(m);on=!on;e.target.textContent=on?'♥':'♡'};
+}
+async function openUser(id){
+  if(typeof id!=='string')return;
+  const [s,t,f]=await Promise.all([stats(id),TQ().eq('uploader_id',id).order('created_at',{ascending:false}),S?sb.from('follows').select('*').match({follower_id:S.user.id,following_id:id}):{data:[]}]);
+  let on=(f.data||[]).length>0;const mine=S&&S.user.id===id;
+  const el=openOv(s.username,`<div class="pf">${ava(s,80)}<h1>${esc(s.username)}${s.is_admin?'<span class="vf">✓</span>':''}${medalOf(s)}</h1>${badgeChip(s)}<div class="cnt"><div><b>${s.fr}</b><small>подписчиков</small></div><div><b>${s.fg}</b><small>подписок</small></div></div>
+    ${mine?'':`<button class="btn pri" id="fw">${on?'Вы подписаны':'Подписаться'}</button>`}</div>${(!mine&&s.priv&&s.priv.hide_uploads)?'<div class="empty" style="padding:18px 0;text-align:center">Пользователь скрыл свои загрузки</div>':lst(t.data||[],trow)}`);
+  const b=el.querySelector('#fw');if(b)b.onclick=async()=>{if(!S)return signIn();const m={follower_id:S.user.id,following_id:id};
+    on?await sb.from('follows').delete().match(m):await sb.from('follows').insert(m);on=!on;b.textContent=on?'Вы подписаны':'Подписаться'};
+}
+async function editProfile(){
+  const s=await stats(S.user.id),st=s.style||{},PAL=['#4fd6b4','#4a7cf0','#a78bfa','#f472b6','#fbbf24'];
+  const bl=((await sb.from('user_badges').select('badges(*)').eq('user_id',S.user.id)).data||[]).map(x=>x.badges).filter(Boolean);
+  const base={username:s.username,bio:s.bio||'',accent:st.accent||PAL[0],frame:st.frame||'ring',bmode:st.bmode||'fade',badge:s.pinned_badge_id||null};let cur={...base},af=null,aurl=null;
+  const el=openOv('Изменить профиль',`<div id="pvw"></div><button class="mrow" id="pa"><span class="mi-ic">${ic('user')}</span><span>Сменить фото</span>${ic('more')}</button><input type="file" id="paf" accept="image/*" hidden>
+    <input class="in" id="pnm" maxlength="24" placeholder="Имя" value="${esc(base.username)}"><textarea class="in" id="pbio" maxlength="80" rows="2" placeholder="О себе">${esc(base.bio)}</textarea>
+    <div class="sh3">Цвет профиля</div><div class="pal">${PAL.map(c=>`<button class="swt" data-c="${c}" style="--c:${c}"></button>`).join('')}</div>
+    <div class="sh3">Рамка аватара</div><div class="seg"><button data-f="ring">Кольцо</button><button data-f="none">Без рамки</button></div>
+    <div class="sh3" style="margin-top:14px">Отображение бейджа</div><div class="seg"><button data-bm="fade">Плавно</button><button data-bm="tile">Плитка</button><button data-bm="off">Скрыть</button></div>`,'<button class="ib" id="psv" style="width:auto;padding:0 16px;font-weight:600;color:var(--accent)" disabled>Готово</button>');
+  const dirty=()=>cur.username!==base.username||cur.bio!==base.bio||cur.accent!==base.accent||cur.frame!==base.frame||cur.badge!==base.badge||cur.bmode!==base.bmode||!!af;
+  const paint=()=>{el.querySelector('#pvw').innerHTML=profCard({...s,username:cur.username||'Имя',bio:cur.bio,style:{accent:cur.accent,frame:cur.frame,bmode:cur.bmode},avatar_url:aurl||s.avatar_url,pb:bl.find(b=>b.id===cur.badge)||null},1);hydrate(el);
+    el.querySelectorAll('[data-c]').forEach(b=>b.classList.toggle('on',b.dataset.c===cur.accent));el.querySelectorAll('[data-f]').forEach(b=>b.classList.toggle('on',b.dataset.f===cur.frame));el.querySelectorAll('[data-bm]').forEach(b=>b.classList.toggle('on',b.dataset.bm===cur.bmode));
+    el.querySelector('#psv').disabled=!dirty()||!cur.username.trim()};
+  const pickBadge=()=>{const d=sheet(`<h2>Бейдж</h2>${bl.length?`<div class="bgrid">${bl.map(b=>`<button class="bpk${b.id===cur.badge?' on':''}" data-bid="${b.id}">${bimg(b)}<small>${esc(b.title)}</small></button>`).join('')}</div>`:'<div class="empty" style="padding:6px 0 12px">У вас пока нет бейджей</div>'}${cur.badge?'<button class="btn dng" data-bid="">Убрать бейдж</button>':''}`);
+    d.onclick=e=>{const b=e.target.closest('[data-bid]');if(!b)return;cur.badge=b.dataset.bid||null;d.close();paint()}};
+  el.addEventListener('input',e=>{if(e.target.id==='pnm')cur.username=e.target.value;if(e.target.id==='pbio')cur.bio=e.target.value;paint()});
+  el.addEventListener('click',e=>{const c=e.target.closest('[data-c]'),f=e.target.closest('[data-f]'),bm=e.target.closest('[data-bm]');if(bm){cur.bmode=bm.dataset.bm;paint()}if(c){cur.accent=c.dataset.c;paint()}if(f){cur.frame=f.dataset.f;paint()}if(e.target.closest('#pa'))el.querySelector('#paf').click();if(e.target.closest('[data-bpick]'))pickBadge()});
+  el.querySelector('#paf').onchange=e=>{af=e.target.files[0];if(af){aurl=URL.createObjectURL(af);paint()}};
+  el.querySelector('#psv').onclick=async e=>{const b=e.currentTarget;b.disabled=true;
+    const u={username:cur.username.trim(),bio:cur.bio.trim(),style:{accent:cur.accent,frame:cur.frame,bmode:cur.bmode},pinned_badge_id:cur.badge};
+    if(af){const url=await putImage('avatars',af);if(url)u.avatar_url=url}
+    const r=await sb.from('profiles').update(u).eq('id',S.user.id);
+    if(r.error){b.disabled=false;return toast(r.error.code==='23505'||/unique/.test(r.error.message)?'Это имя уже занято':'Ошибка: '+r.error.message)}
+    ME={...ME,...u};setNavAvatar();el.close();toast('Профиль обновлён');profile()};
+  paint();
+}
+async function showStats(){
+  const s=await stats(S.user.id);
+  const tiles=[['Просмотры',s.profile_views||0],['Подписчики',s.fr],['Подписки',s.fg],['Треков',s.up],['Лайков',s.lk],['Дней',s.ds],['Ачивок',s.ac]];
+  sheet(`<h2>Статистика</h2><div class="sgrid">${tiles.map(t=>`<div class="tile"><b>${t[1]}</b><small>${t[0]}</small></div>`).join('')}</div>`);
+}
+/* ---------- события ---------- */
+let lpT=null,lpFired=false,lpX=0,lpY=0;
+document.addEventListener('pointerdown',e=>{lpFired=false;clearTimeout(lpT);const it=e.target.closest('.tr[data-i]');if(!it||e.target.closest('[data-menu]'))return;lpX=e.clientX;lpY=e.clientY;
+  lpT=setTimeout(()=>{lpFired=true;if(navigator.vibrate)navigator.vibrate(12);openMenu(L[+it.dataset.l][+it.dataset.i],it)},480)});
+document.addEventListener('pointermove',e=>{if(Math.hypot(e.clientX-lpX,e.clientY-lpY)>10)clearTimeout(lpT)});
+['pointerup','pointercancel'].forEach(n=>document.addEventListener(n,()=>clearTimeout(lpT)));
+document.addEventListener('contextmenu',e=>{if(e.target.closest('.tr'))e.preventDefault()});
+document.addEventListener('click',e=>{
+  if(lpFired){lpFired=false;return}
+  const q=s=>e.target.closest(s);let x;
+  if(x=q('[data-go]'))return go(x.dataset.go);
+  if(q('[data-soon]'))return soon();
+  if(q('[data-bell]'))return openNotifs();
+  if(q('[data-ach]'))return openAch();
+  if(q('[data-bdg]'))return openBadges();
+  if(x=q('[data-sq]')){$('q').value=x.dataset.sq;return $('q').dispatchEvent(new Event('input'))}
+  if(x=q('[data-sx]')){setH(getH().filter(v=>v!==x.dataset.sx));return searchHome()}
+  if(q('[data-sclr]')){setH([]);return searchHome()}
+  if(q('[data-set2]'))return openSettings();
+  if(q('[data-orx]'))return toast('Скоро...');
+  if(q('[data-plus]'))return addTrack();
+  if(q('[data-addtrack]'))return addTrack();
+  if(q('[data-addpl]'))return addPlaylist();
+  if(q('[data-signin]'))return signIn();
+  if(q('[data-pe]'))return editProfile();
+  if(q('[data-st]'))return showStats();
+  if(q('[data-out]'))return sb.auth.signOut().then(()=>{S=null;admin=false;ME=null;LIKED.clear();UNREAD=0;sb.removeAllChannels();setNavAvatar();go('home')});
+  if(x=q('[data-more]'))return MORE[x.dataset.more]&&MORE[x.dataset.more]();
+  if(x=q('[data-back]'))return x.closest('.ov').close();
+  const it=q('[data-i]');
+  if(it){const t=L[+it.dataset.l][+it.dataset.i];
+     if(q('[data-menu]'))return openMenu(t,it);if(q('[data-like]'))return like(t);
+    queue=L[+it.dataset.l].slice();return play(+it.dataset.i)}
+  if(x=q('[data-p]'))return openPlaylist(x.dataset.p);
+  if(x=q('[data-u]'))return openUser(x.dataset.u);
+});
+(async()=>{
+  const {data}=await sb.auth.getSession();S=data.session;
+  if(S){
+    const [pr,lks]=await Promise.all([sb.from('profiles').select('*').eq('id',S.user.id).single(),sb.from('likes').select('track_id').eq('user_id',S.user.id)]);
+    ME=pr.data;admin=!!(ME&&ME.is_admin);(lks.data||[]).forEach(x=>LIKED.add(x.track_id));await loadSettings();initNotifs();
+    sb.from('activity_days').upsert({user_id:S.user.id,day:new Date().toISOString().slice(0,10)},{ignoreDuplicates:true}).then(()=>{},()=>{});
+  }
+  new ResizeObserver(()=>document.documentElement.style.setProperty('--dock-h',$('dock').offsetHeight+'px')).observe($('dock'));
+  lk.innerHTML=ic('heart');pp.innerHTML=ic('play','f');nx.innerHTML=ic('skip','f');setNavAvatar();
+  go('home');
+})();
+</script>
+</body>
+</html>
