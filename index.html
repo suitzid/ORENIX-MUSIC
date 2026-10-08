@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0d1512">
-<title>Orenix Music v0.4.7</title>
+<title>Orenix Music v0.4.8</title>
 <style>
 /* Orenix Music v0.4.0 — стили (палитра и навбар из референса) */
 :root{
@@ -309,6 +309,17 @@ button.chip2{padding:8px 14px;font-size:14px}
 #gi{top:calc(env(safe-area-inset-top,0px) + 10px + var(--tl))}
 #tb{height:calc(env(safe-area-inset-top,0px) + 48px + var(--tl))}
 #toast{top:calc(env(safe-area-inset-top,0px) + 64px + var(--tl))}
+/* ===== v0.4.8: отображение бейджа ===== */
+.pcard>.pc-fade{position:absolute;top:0;right:0;bottom:0;width:60%;z-index:0;overflow:hidden;
+  -webkit-mask-image:linear-gradient(90deg,transparent,rgba(0,0,0,.55) 38%,#000 78%),linear-gradient(180deg,transparent,#000 22%,#000 78%,transparent);-webkit-mask-composite:source-in;
+  mask-image:linear-gradient(90deg,transparent,rgba(0,0,0,.55) 38%,#000 78%),linear-gradient(180deg,transparent,#000 22%,#000 78%,transparent);mask-composite:intersect}
+.pc-fade img{width:100%;height:100%;object-fit:cover;display:block;opacity:.9}
+.pcard>.av,.pcard>.pc-main{z-index:1}
+.pcard.hasfade .pc-main{text-shadow:0 1px 8px rgba(0,0,0,.65)}
+.pcard.ed>*:not(.pc-fade):not(.pc-ban){pointer-events:none}
+/* кадрирование картинки бейджа */
+.crf{position:relative;overflow:hidden;margin:0 auto;border-radius:18px;background:#000;border:.5px solid var(--glass-border);touch-action:none}
+.crf img{position:absolute;left:0;top:0;max-width:none;transform-origin:0 0;user-select:none;-webkit-user-drag:none;pointer-events:none}
 </style>
 </head>
 <body>
@@ -333,7 +344,7 @@ button.chip2{padding:8px 14px;font-size:14px}
 <script>
 /* SQL для бейджей-картинок (выполнить один раз в Supabase):
    alter table public.badges add column if not exists image_url text; */
-const VERSION='v0.4.7';
+const VERSION='v0.4.8';
 const SB_URL='https://pehcelgdqtekkknpqvaa.supabase.co',SB_KEY='sb_publishable_0rAsicZ1ZzIC2qO6dJ-saQ_XBmlxVPc';
 const sb=window.supabase.createClient(SB_URL,SB_KEY);
 const $=id=>document.getElementById(id), MAX=7*1024*1024;
@@ -366,11 +377,32 @@ const ic=(n,c='')=>`<svg class="icon ${c}" viewBox="0 0 24 24">${I[n]}</svg>`;
 I.link='<path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1 1M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1-1"/>';
 const ORX_IC='<img class="oxi" alt="" src="data:image/png;base64,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">';
 const G_IC='<span class="gic"><svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg></span>';
+function cropImage(file,done){
+  const url=URL.createObjectURL(file),im=new Image();
+  im.onerror=()=>toast('Не удалось открыть картинку');
+  im.onload=()=>{
+    const FW=Math.min(320,innerWidth-64);let FH,min,sc,x,y;
+    const d=sheet(`<h2>Область бейджа</h2><div class="seg" style="margin-bottom:12px"><button data-ar="1">Квадрат</button><button data-ar="2">Широкий</button></div><div class="crf"><img draggable="false" alt="" src="${url}"></div><small style="display:block;text-align:center;margin-top:8px">Двигай картинку пальцем, масштаб — ползунком</small><input type="range" class="crz" min="1" max="4" step="0.01" value="1" style="width:100%;margin:12px 0;accent-color:var(--accent)"><button class="btn pri crok">Готово</button>`);
+    const frame=d.querySelector('.crf'),img=frame.querySelector('img'),z=d.querySelector('.crz');
+    const draw=()=>{const w=im.width*sc,hh=im.height*sc;x=Math.min(0,Math.max(FW-w,x));y=Math.min(0,Math.max(FH-hh,y));img.style.width=w+'px';img.style.height=hh+'px';img.style.transform=`translate(${x}px,${y}px)`};
+    const setAr=a=>{FH=Math.round(FW/a);frame.style.width=FW+'px';frame.style.height=FH+'px';min=Math.max(FW/im.width,FH/im.height);z.value=1;sc=min;x=(FW-im.width*sc)/2;y=(FH-im.height*sc)/2;draw();d.querySelectorAll('[data-ar]').forEach(b=>b.classList.toggle('on',+b.dataset.ar===a))};
+    z.oninput=()=>{const ns=min*z.value,cx=FW/2,cy=FH/2;x=cx-(cx-x)*ns/sc;y=cy-(cy-y)*ns/sc;sc=ns;draw()};
+    let px=0,py=0,dr=false;
+    frame.onpointerdown=e=>{dr=true;px=e.clientX;py=e.clientY;frame.setPointerCapture(e.pointerId)};
+    frame.onpointermove=e=>{if(!dr)return;x+=e.clientX-px;y+=e.clientY-py;px=e.clientX;py=e.clientY;draw()};
+    frame.onpointerup=frame.onpointercancel=()=>{dr=false};
+    d.addEventListener('click',e=>{const a=e.target.closest('[data-ar]');if(a)setAr(+a.dataset.ar)});
+    d.querySelector('.crok').onclick=()=>{const k=512/FW,c=document.createElement('canvas');c.width=512;c.height=Math.round(FH*k);
+      c.getContext('2d').drawImage(im,x*k,y*k,im.width*sc*k,im.height*sc*k);c.toBlob(b=>{d.close();done(b)},'image/jpeg',.9)};
+    setAr(1);
+  };
+  im.src=url;
+}
 function pickFile(cb){const i=document.createElement('input');i.type='file';i.accept='image/*';i.onchange=()=>i.files[0]&&cb(i.files[0]);i.click()}
 const MED={1:['#fff6bd','#e0a21b','#5c3f00','#e2716a','#b9433d'],2:['#ffffff','#9aa4ad','#2f373d','#6f9bff','#3a62c4'],3:['#fbd3ac','#b0642a','#4a2509','#5fe0c0','#2e9c80']};
 const medalSvg=n=>{const c=MED[n];return `<span class="md" title="№${n} в чарте"><svg viewBox="0 0 24 30" aria-hidden="true"><defs><linearGradient id="mg${n}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${c[0]}"/><stop offset="1" stop-color="${c[1]}"/></linearGradient><linearGradient id="mi${n}" x1="1" y1="1" x2="0" y2="0"><stop offset="0" stop-color="${c[0]}"/><stop offset="1" stop-color="${c[1]}"/></linearGradient></defs><path d="M5 0h6l5 13H10z" fill="${c[3]}"/><path d="M19 0h-6L8 13h6z" fill="${c[4]}"/><circle cx="12" cy="19" r="10" fill="url(#mg${n})" stroke="${c[2]}" stroke-opacity=".45" stroke-width=".8"/><circle cx="12" cy="19" r="7.2" fill="url(#mi${n})" stroke="#fff" stroke-opacity=".55" stroke-width=".8"/><path d="M6.2 15.2a7 7 0 0 1 5-3.4" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="1" stroke-linecap="round"/><text x="12" y="19.2" text-anchor="middle" dominant-baseline="central" font-size="9.5" font-weight="800" fill="${c[2]}" font-family="-apple-system,system-ui,sans-serif">${n}</text></svg></span>`};
 const bimg=b=>b&&b.image_url?`<span class="bsym"><img class="bi" data-src="${esc(b.image_url)}" src="${BLANK}" alt=""></span>`:`<span class="bsym" style="--bc:${esc(b&&b.color||'#4fd6b4')}">${ic('badge')}</span>`;
-const banField=(b,edit)=>`<div class="pc-ban${b&&b.image_url?' has':''}"${edit?' data-bpick':''}>${b?(b.image_url?`<img class="bimg" data-src="${esc(b.image_url)}" src="${BLANK}" alt="">`:`<span style="color:${esc(b.color||'#4fd6b4')}">${ic('badge')}</span>`):(edit?ic('plus'):ic('badge'))}</div>`;
+const banField=(b,edit,mode)=>mode==='fade'&&b&&b.image_url?`<div class="pc-fade"${edit?' data-bpick':''}><img data-src="${esc(b.image_url)}" src="${BLANK}" alt=""></div>`:(mode==='off'&&!edit)?'':`<div class="pc-ban${b&&b.image_url?' has':''}"${edit?' data-bpick':''}>${b?(b.image_url?`<img class="bimg" data-src="${esc(b.image_url)}" src="${BLANK}" alt="">`:`<span style="color:${esc(b.color||'#4fd6b4')}">${ic('badge')}</span>`):(edit?ic('plus'):ic('badge'))}</div>`;
 
 const hd=(o={})=>`<div class="hd">${o.set?`<button class="ib" data-set2>${ic('set')}</button>`:'<span></span>'}<span class="hr"><button class="ib" data-bell>${ic('bell')}${bdg()}</button>${o.plus?`<button class="ib" data-plus>${ic('plus')}</button>`:''}</span></div>`;
 async function cached(img){const u=img.dataset.src; if(!u){img.src=BLANK;return}
@@ -485,8 +517,8 @@ function search(){
     lg=setTimeout(()=>{const v=$('q').value.trim();if(v.length>=2){addH(v.toLowerCase());sb.rpc('log_search',{q:v}).then(()=>{},()=>{})}},1300)};
 }
 const medalOf=s=>s.medal?medalSvg(s.medal):'';
-const badgeChip=s=>s.pb?`<span class="bchip" style="--bc:${esc(s.pb.color)}">${s.pb.image_url?`<img class="bchi" data-src="${esc(s.pb.image_url)}" src="${BLANK}" alt="">`:''}${esc(s.pb.title)}</span>`:'';
-const profCard=(s,edit)=>{const st=s.style||{};return `<div class="pcard${st.frame==='none'?' nofr':''}" style="--pa:${esc(st.accent||'#4fd6b4')}">${ava(s,92)}<div class="pc-main"><div class="pc-name"><h1>${esc(s.username)}</h1>${s.is_admin?'<span class="vf">✓</span>':''}${medalOf(s)}</div>${s.bio?`<div class="pc-bio">${esc(s.bio)}</div>`:''}<div class="pc-cnt"><div><b>${s.fr}</b><small>подписчиков</small></div><i></i><div><b>${s.fg}</b><small>подписок</small></div></div></div>${banField(s.pb,edit)}</div>`};
+const badgeChip=s=>s.pb&&(s.style||{}).bmode!=='off'?`<span class="bchip" style="--bc:${esc(s.pb.color)}">${s.pb.image_url?`<img class="bchi" data-src="${esc(s.pb.image_url)}" src="${BLANK}" alt="">`:''}${esc(s.pb.title)}</span>`:'';
+const profCard=(s,edit)=>{const st=s.style||{},bm=st.bmode||'fade',fd=bm==='fade'&&s.pb&&s.pb.image_url;return `<div class="pcard${st.frame==='none'?' nofr':''}${fd?' hasfade':''}${edit?' ed':''}" style="--pa:${esc(st.accent||'#4fd6b4')}">${ava(s,92)}<div class="pc-main"><div class="pc-name"><h1>${esc(s.username)}</h1>${s.is_admin?'<span class="vf">✓</span>':''}${medalOf(s)}</div>${s.bio?`<div class="pc-bio">${esc(s.bio)}</div>`:''}<div class="pc-cnt"><div><b>${s.fr}</b><small>подписчиков</small></div><i></i><div><b>${s.fg}</b><small>подписок</small></div></div></div>${banField(s.pb,edit,bm)}</div>`};
 async function profile(){
   if(!S)return needLogin();app.innerHTML=hd()+'<div class="empty">Загрузка...</div>';
   const s=await stats(S.user.id);ME={...ME,...s};
@@ -642,7 +674,7 @@ async function adminBadges(){
   const el=openOv('Бейджи (админ)',`<button class="btn pri" data-nb>Новый бейдж</button>`+(data||[]).map(b=>`<div class="row"><span data-bi="${b.id}" style="display:contents">${bimg(b)}</span><div class="t"><b>${esc(b.title)}</b><small>${esc(b.descr)}</small></div><button class="ib" data-gv="${b.id}" aria-label="Выдать">${ic('qadd')}</button><button class="ib" data-bd="${b.id}" style="color:var(--danger)">${ic('trash')}</button></div>`).join(''));
   el.addEventListener('click',async e=>{
     if(e.target.closest('[data-nb]'))return newBadge(el);
-    const bi=e.target.closest('[data-bi]');if(bi)return pickFile(async f=>{toast('Загружаю...');const u=await putImage('covers',f);if(!u)return toast('Не удалось загрузить');const r=await sb.from('badges').update({image_url:u}).eq('id',bi.dataset.bi);if(r.error)return toast('Ошибка: '+r.error.message);el.close();adminBadges();toast('Картинка обновлена')});
+    const bi=e.target.closest('[data-bi]');if(bi)return pickFile(f=>cropImage(f,async blob=>{toast('Загружаю...');const u=await putImage('covers',blob);if(!u)return toast('Не удалось загрузить');const r=await sb.from('badges').update({image_url:u}).eq('id',bi.dataset.bi);if(r.error)return toast('Ошибка: '+r.error.message);el.close();adminBadges();toast('Картинка обновлена')}));
     const g=e.target.closest('[data-gv]');if(g)return giveBadge(g.dataset.gv);
     const d=e.target.closest('[data-bd]');if(d&&confirm('Удалить бейдж?')){await sb.from('badges').delete().eq('id',d.dataset.bd);el.close();adminBadges()}});
 }
@@ -650,7 +682,8 @@ function newBadge(el){
   let col=COLORS[0],bfile=null;
   const d=sheet(`<h2>Новый бейдж</h2><input class="in" id="bt" placeholder="Название"><input class="in" id="bd2" placeholder="Описание"><div class="cpick"><img id="bim" class="cov" src="${BLANK}" alt=""><button class="btn" id="bpk">Картинка</button></div><div class="pal">${COLORS.map(c=>`<button class="swt${c===col?' on':''}" data-c="${c}" style="--c:${c}"></button>`).join('')}</div><button class="btn pri" id="bsv">Создать</button>`);
   d.addEventListener('click',e=>{const c=e.target.closest('[data-c]');if(c){col=c.dataset.c;d.querySelectorAll('[data-c]').forEach(b=>b.classList.toggle('on',b===c))}});
-  d.querySelector('#bpk').onclick=()=>pickFile(f=>{bfile=f;d.querySelector('#bim').src=URL.createObjectURL(f)});
+  let bsrc=null;const crop=f=>{bsrc=f;cropImage(f,b=>{bfile=b;const pv=d.querySelector('#bim');pv.style.objectFit='contain';pv.src=URL.createObjectURL(b)})};
+  d.querySelector('#bpk').onclick=()=>pickFile(crop);d.querySelector('#bim').onclick=()=>bsrc&&crop(bsrc);
   bsv.onclick=async()=>{const t=bt.value.trim();if(!t)return toast('Введите название');if(!bfile)return toast('Выберите картинку');bsv.disabled=true;
     const iu=await putImage('covers',bfile);if(!iu){bsv.disabled=false;return toast('Не удалось загрузить картинку')}
     const r=await sb.from('badges').insert({slug:'b'+Date.now().toString(36),title:t,descr:bd2.value.trim(),symbol:'★',color:col,image_url:iu});
@@ -741,22 +774,23 @@ async function openUser(id){
 async function editProfile(){
   const s=await stats(S.user.id),st=s.style||{},PAL=['#4fd6b4','#4a7cf0','#a78bfa','#f472b6','#fbbf24'];
   const bl=((await sb.from('user_badges').select('badges(*)').eq('user_id',S.user.id)).data||[]).map(x=>x.badges).filter(Boolean);
-  const base={username:s.username,bio:s.bio||'',accent:st.accent||PAL[0],frame:st.frame||'ring',badge:s.pinned_badge_id||null};let cur={...base},af=null,aurl=null;
+  const base={username:s.username,bio:s.bio||'',accent:st.accent||PAL[0],frame:st.frame||'ring',bmode:st.bmode||'fade',badge:s.pinned_badge_id||null};let cur={...base},af=null,aurl=null;
   const el=openOv('Изменить профиль',`<div id="pvw"></div><button class="mrow" id="pa"><span class="mi-ic">${ic('user')}</span><span>Сменить фото</span>${ic('more')}</button><input type="file" id="paf" accept="image/*" hidden>
     <input class="in" id="pnm" maxlength="24" placeholder="Имя" value="${esc(base.username)}"><textarea class="in" id="pbio" maxlength="80" rows="2" placeholder="О себе">${esc(base.bio)}</textarea>
     <div class="sh3">Цвет профиля</div><div class="pal">${PAL.map(c=>`<button class="swt" data-c="${c}" style="--c:${c}"></button>`).join('')}</div>
-    <div class="sh3">Рамка аватара</div><div class="seg"><button data-f="ring">Кольцо</button><button data-f="none">Без рамки</button></div>`,'<button class="ib" id="psv" style="width:auto;padding:0 16px;font-weight:600;color:var(--accent)" disabled>Готово</button>');
-  const dirty=()=>cur.username!==base.username||cur.bio!==base.bio||cur.accent!==base.accent||cur.frame!==base.frame||cur.badge!==base.badge||!!af;
-  const paint=()=>{el.querySelector('#pvw').innerHTML=profCard({...s,username:cur.username||'Имя',bio:cur.bio,style:{accent:cur.accent,frame:cur.frame},avatar_url:aurl||s.avatar_url,pb:bl.find(b=>b.id===cur.badge)||null},1);hydrate(el);
-    el.querySelectorAll('[data-c]').forEach(b=>b.classList.toggle('on',b.dataset.c===cur.accent));el.querySelectorAll('[data-f]').forEach(b=>b.classList.toggle('on',b.dataset.f===cur.frame));
+    <div class="sh3">Рамка аватара</div><div class="seg"><button data-f="ring">Кольцо</button><button data-f="none">Без рамки</button></div>
+    <div class="sh3" style="margin-top:14px">Отображение бейджа</div><div class="seg"><button data-bm="fade">Плавно</button><button data-bm="tile">Плитка</button><button data-bm="off">Скрыть</button></div>`,'<button class="ib" id="psv" style="width:auto;padding:0 16px;font-weight:600;color:var(--accent)" disabled>Готово</button>');
+  const dirty=()=>cur.username!==base.username||cur.bio!==base.bio||cur.accent!==base.accent||cur.frame!==base.frame||cur.badge!==base.badge||cur.bmode!==base.bmode||!!af;
+  const paint=()=>{el.querySelector('#pvw').innerHTML=profCard({...s,username:cur.username||'Имя',bio:cur.bio,style:{accent:cur.accent,frame:cur.frame,bmode:cur.bmode},avatar_url:aurl||s.avatar_url,pb:bl.find(b=>b.id===cur.badge)||null},1);hydrate(el);
+    el.querySelectorAll('[data-c]').forEach(b=>b.classList.toggle('on',b.dataset.c===cur.accent));el.querySelectorAll('[data-f]').forEach(b=>b.classList.toggle('on',b.dataset.f===cur.frame));el.querySelectorAll('[data-bm]').forEach(b=>b.classList.toggle('on',b.dataset.bm===cur.bmode));
     el.querySelector('#psv').disabled=!dirty()||!cur.username.trim()};
   const pickBadge=()=>{const d=sheet(`<h2>Бейдж</h2>${bl.length?`<div class="bgrid">${bl.map(b=>`<button class="bpk${b.id===cur.badge?' on':''}" data-bid="${b.id}">${bimg(b)}<small>${esc(b.title)}</small></button>`).join('')}</div>`:'<div class="empty" style="padding:6px 0 12px">У вас пока нет бейджей</div>'}${cur.badge?'<button class="btn dng" data-bid="">Убрать бейдж</button>':''}`);
     d.onclick=e=>{const b=e.target.closest('[data-bid]');if(!b)return;cur.badge=b.dataset.bid||null;d.close();paint()}};
   el.addEventListener('input',e=>{if(e.target.id==='pnm')cur.username=e.target.value;if(e.target.id==='pbio')cur.bio=e.target.value;paint()});
-  el.addEventListener('click',e=>{const c=e.target.closest('[data-c]'),f=e.target.closest('[data-f]');if(c){cur.accent=c.dataset.c;paint()}if(f){cur.frame=f.dataset.f;paint()}if(e.target.closest('#pa'))el.querySelector('#paf').click();if(e.target.closest('[data-bpick]'))pickBadge()});
+  el.addEventListener('click',e=>{const c=e.target.closest('[data-c]'),f=e.target.closest('[data-f]'),bm=e.target.closest('[data-bm]');if(bm){cur.bmode=bm.dataset.bm;paint()}if(c){cur.accent=c.dataset.c;paint()}if(f){cur.frame=f.dataset.f;paint()}if(e.target.closest('#pa'))el.querySelector('#paf').click();if(e.target.closest('[data-bpick]'))pickBadge()});
   el.querySelector('#paf').onchange=e=>{af=e.target.files[0];if(af){aurl=URL.createObjectURL(af);paint()}};
   el.querySelector('#psv').onclick=async e=>{const b=e.currentTarget;b.disabled=true;
-    const u={username:cur.username.trim(),bio:cur.bio.trim(),style:{accent:cur.accent,frame:cur.frame},pinned_badge_id:cur.badge};
+    const u={username:cur.username.trim(),bio:cur.bio.trim(),style:{accent:cur.accent,frame:cur.frame,bmode:cur.bmode},pinned_badge_id:cur.badge};
     if(af){const url=await putImage('avatars',af);if(url)u.avatar_url=url}
     const r=await sb.from('profiles').update(u).eq('id',S.user.id);
     if(r.error){b.disabled=false;return toast(r.error.code==='23505'||/unique/.test(r.error.message)?'Это имя уже занято':'Ошибка: '+r.error.message)}
@@ -800,21 +834,4 @@ document.addEventListener('click',e=>{
   const it=q('[data-i]');
   if(it){const t=L[+it.dataset.l][+it.dataset.i];
     if(q('[data-menu]'))return openMenu(t,it);if(q('[data-like]'))return like(t);
-    queue=L[+it.dataset.l].slice();return play(+it.dataset.i)}
-  if(x=q('[data-p]'))return openPlaylist(x.dataset.p);
-  if(x=q('[data-u]'))return openUser(x.dataset.u);
-});
-(async()=>{
-  const {data}=await sb.auth.getSession();S=data.session;
-  if(S){
-    const [pr,lks]=await Promise.all([sb.from('profiles').select('*').eq('id',S.user.id).single(),sb.from('likes').select('track_id').eq('user_id',S.user.id)]);
-    ME=pr.data;admin=!!(ME&&ME.is_admin);(lks.data||[]).forEach(x=>LIKED.add(x.track_id));await loadSettings();initNotifs();
-    sb.from('activity_days').upsert({user_id:S.user.id,day:new Date().toISOString().slice(0,10)},{ignoreDuplicates:true}).then(()=>{},()=>{});
-  }
-  new ResizeObserver(()=>document.documentElement.style.setProperty('--dock-h',$('dock').offsetHeight+'px')).observe($('dock'));
-  lk.innerHTML=ic('heart');pp.innerHTML=ic('play','f');nx.innerHTML=ic('skip','f');setNavAvatar();
-  go('home');
-})();
-</script>
-</body>
-</html>
+    queue=L[+it.dataset.l].slice();retu
