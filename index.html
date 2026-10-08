@@ -330,7 +330,7 @@ button.chip2{padding:8px 14px;font-size:14px}
     e.innerHTML='<div style="padding:110px 20px 0"><p style="color:#8b968f;margin:0 0 14px">'+m+'</p><button class="btn pri" onclick="location.reload()">Перезагрузить</button><button class="btn" onclick="orxReset()">Сбросить вход и перезапустить</button></div>'}
   window.orxReset=function(){try{Object.keys(localStorage).filter(function(k){return /^sb-|supabase/.test(k)}).forEach(function(k){localStorage.removeItem(k)})}catch(e){}
     try{indexedDB.deleteDatabase('orx')}catch(e){}location.replace(location.href.split(/[?#]/)[0])};
-  function why(){return window.supabase?'Приложение не загрузилось.':'Не загрузилась библиотека входа (cdn.jsdelivr.net). Проверь интернет или выключи VPN.'}
+  function why(){return window.supabase?'Приложение не загрузилось.':'Приложение не запустилось. Проверь интернет.'}
   window.addEventListener('error',function(e){show(why()+'<br><small>'+(e.message||'')+'</small>')});
   window.orxShow=show;
   setTimeout(function(){show(why())},30000);
@@ -352,7 +352,100 @@ button.chip2{padding:8px 14px;font-size:14px}
 </div>
 <div id="toast"></div>
 
-<script type="text/plain" id="orx-main">
+<script>
+/* Мини-клиент Supabase без CDN: auth (implicit/refresh), PostgREST, storage. Те же вызовы, что у supabase-js. */
+(function(){
+const enc=encodeURIComponent,now=()=>Math.floor(Date.now()/1000);
+function createClient(url,key,opts){
+  const ref=(url.match(/\/\/([^.]+)\./)||[])[1]||'x',SK='sb-'+ref+'-auth-token';
+  const st=(opts&&opts.auth&&opts.auth.storage)||{getItem:async k=>localStorage.getItem(k),setItem:async(k,v)=>localStorage.setItem(k,v),removeItem:async k=>localStorage.removeItem(k)};
+  let sess=null,initP=null,refP=null;const subs=[];
+  const emit=(ev,s)=>subs.forEach(f=>{try{f(ev,s)}catch(e){}});
+  const save=async s=>{sess=s;try{await st.setItem(SK,JSON.stringify(s))}catch(e){}};
+  const drop=async()=>{sess=null;try{await st.removeItem(SK)}catch(e){}};
+  const norm=j=>({access_token:j.access_token,refresh_token:j.refresh_token,token_type:j.token_type||'bearer',expires_in:j.expires_in,expires_at:j.expires_at||now()+(+j.expires_in||3600),user:j.user});
+  async function refresh(rt){
+    const r=await fetch(url+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{apikey:key,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:rt})});
+    const j=await r.json();if(!r.ok||!j.access_token){const e=new Error(j.msg||j.error_description||'refresh failed');e.bad=r.status>=400&&r.status<500;throw e}
+    return norm(j)}
+  async function fromHash(){
+    if(!/access_token=/.test(location.hash))return null;
+    const p=new URLSearchParams(location.hash.replace(/^#/,'')),at=p.get('access_token');
+    try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}
+    if(!at)return null;
+    const r=await fetch(url+'/auth/v1/user',{headers:{apikey:key,Authorization:'Bearer '+at}}),u=await r.json();if(!r.ok)return null;
+    const ei=+p.get('expires_in')||3600;
+    return {access_token:at,refresh_token:p.get('refresh_token'),token_type:p.get('token_type')||'bearer',expires_in:ei,expires_at:+p.get('expires_at')||now()+ei,user:u}}
+  const init=()=>initP||(initP=(async()=>{
+    try{const hs=await fromHash();if(hs){await save(hs);return}}catch(e){}
+    try{const raw=await st.getItem(SK);if(raw)sess=JSON.parse(raw)}catch(e){}})());
+  async function getSession(){
+    await init();
+    if(sess&&sess.expires_at-now()<90){
+      refP=refP||(async()=>{try{const n=await refresh(sess.refresh_token);await save(n);emit('TOKEN_REFRESHED',n)}catch(e){if(e.bad||sess.expires_at<=now())await drop()}finally{refP=null}})();
+      await refP}
+    return {data:{session:sess},error:null}}
+  const token=async()=>{const s=(await getSession()).data.session;return s?s.access_token:key};
+  class Q{
+    constructor(t,raw){this.t=t;this.raw=raw;this.m='GET';this.p=new URLSearchParams();this.body=null;this.ret=false;this.cnt=false;this.res='';this.ord=[];this.one=''}
+    select(c='*',o={}){this.p.set('select',c);if(this.m==='GET'||this.m==='HEAD'){if(o.count)this.cnt=true;if(o.head)this.m='HEAD'}else this.ret=true;return this}
+    insert(b){this.m='POST';this.body=b;return this}
+    update(b){this.m='PATCH';this.body=b;return this}
+    upsert(b,o={}){this.m='POST';this.body=b;this.res=o.ignoreDuplicates?'ignore-duplicates':'merge-duplicates';if(o.onConflict)this.p.set('on_conflict',o.onConflict);return this}
+    delete(){this.m='DELETE';return this}
+    eq(c,v){this.p.append(c,'eq.'+v);return this}
+    ilike(c,v){this.p.append(c,'ilike.'+v);return this}
+    is(c,v){this.p.append(c,'is.'+(v===null?'null':v));return this}
+    in(c,a){this.p.append(c,'in.('+a.map(x=>/[,()"]/.test(x)?'"'+String(x).replace(/"/g,'\\"')+'"':x).join(',')+')');return this}
+    or(s){this.p.append('or','('+s+')');return this}
+    match(o){for(const k in o)this.eq(k,o[k]);return this}
+    order(c,o={}){this.ord.push(c+'.'+(o.ascending===false?'desc':'asc'));return this}
+    limit(n){this.p.set('limit',n);return this}
+    single(){this.one='single';return this}
+    maybeSingle(){this.one='maybe';return this}
+    then(a,b){return this.run().then(a,b)}
+    async run(){
+      const tok=await token();if(this.ord.length)this.p.set('order',this.ord.join(','));
+      const h={apikey:key,Authorization:'Bearer '+tok},pf=[];
+      if(this.cnt)pf.push('count=exact');
+      if(!this.raw&&this.m!=='GET'&&this.m!=='HEAD')pf.push(this.ret?'return=representation':'return=minimal');
+      if(this.res)pf.push('resolution='+this.res);
+      if(pf.length)h.Prefer=pf.join(',');
+      if(this.body!=null)h['Content-Type']='application/json';
+      let r;try{r=await fetch(url+'/rest/v1/'+this.t+'?'+this.p,{method:this.m,headers:h,body:this.body!=null?JSON.stringify(this.body):undefined})}
+      catch(e){return {data:null,error:{message:'нет соединения',code:''},count:null,status:0}}
+      const tx=this.m==='HEAD'?'':await r.text();let d=null;if(tx){try{d=JSON.parse(tx)}catch(e){d=tx}}
+      if(!r.ok)return {data:null,error:{message:(d&&d.message)||tx||('HTTP '+r.status),code:d&&d.code,details:d&&d.details},count:null,status:r.status};
+      let cn=null;const cr=r.headers.get('content-range');if(cr&&cr.includes('/')){const n=cr.split('/')[1];if(n&&n!=='*')cn=+n}
+      if(this.one&&Array.isArray(d)){
+        if(d.length===1)d=d[0];
+        else if(this.one==='maybe'&&d.length===0)d=null;
+        else return {data:null,error:{message:'JSON object requested, multiple (or no) rows returned',code:'PGRST116'},count:cn,status:406}}
+      return {data:d,error:null,count:cn,status:r.status}}
+  }
+  const sfetch=async(m,path,body,extra)=>{const tok=await token();
+    try{const r=await fetch(url+'/storage/v1/'+path,{method:m,headers:{apikey:key,Authorization:'Bearer '+tok,...extra},body});const j=await r.json().catch(()=>({}));
+      return r.ok?{data:j,error:null}:{data:null,error:{message:j.message||j.error||('HTTP '+r.status)}}}catch(e){return {data:null,error:{message:'нет соединения'}}}};
+  const ep=p=>p.split('/').map(enc).join('/');
+  const chan={on(){return chan},subscribe(){return chan}};
+  return {
+    auth:{getSession,
+      onAuthStateChange(cb){subs.push(cb);return {data:{subscription:{unsubscribe(){const i=subs.indexOf(cb);if(i>=0)subs.splice(i,1)}}}}},
+      async signInWithOAuth(o){location.href=url+'/auth/v1/authorize?provider='+enc(o.provider)+'&redirect_to='+enc((o.options&&o.options.redirectTo)||location.href.split(/[?#]/)[0]);return {data:{},error:null}},
+      async signOut(){try{const t=sess&&sess.access_token;if(t)await fetch(url+'/auth/v1/logout',{method:'POST',headers:{apikey:key,Authorization:'Bearer '+t}})}catch(e){}await drop();emit('SIGNED_OUT',null);return {error:null}}},
+    from:t=>new Q(t),
+    rpc:(n,a)=>{const q=new Q('rpc/'+n,true);q.m='POST';q.body=a||{};return q},
+    storage:{from:b=>({
+      upload:(path,blob,o={})=>sfetch('POST','object/'+b+'/'+ep(path),blob,{'Content-Type':o.contentType||blob.type||'application/octet-stream','x-upsert':String(!!o.upsert)}),
+      remove:paths=>sfetch('DELETE','object/'+b,JSON.stringify({prefixes:paths}),{'Content-Type':'application/json'}),
+      getPublicUrl:path=>({data:{publicUrl:url+'/storage/v1/object/public/'+b+'/'+ep(path)}})})},
+    channel:()=>chan,removeAllChannels:async()=>{}
+  };
+}
+window.supabase={createClient:createClient};
+})();
+</script>
+<script>
 /* SQL для бейджей-картинок (выполнить один раз в Supabase):
    alter table public.badges add column if not exists image_url text; */
 const VERSION='v0.4.8';
@@ -764,60 +857,4 @@ function addPlaylist(){
     <button class="btn" id="pk">Добавить трек</button><button class="btn pri" id="pc">Создать</button>`);
   cb.onclick=()=>cf.click();cf.onchange=e=>{coverFile=e.target.files[0];if(coverFile)cp.src=URL.createObjectURL(coverFile)};
   pk.onclick=async()=>{const {data}=await TQ().order('created_at',{ascending:false}).limit(300),tr=data||[];
-    const ov=openOv('Выберите треки',tr.map((t,i)=>`<div class="row pick${PICK.has(t.id)?' sel':''}" data-pick="${i}">${cov(t.artwork_url)}<div class="t"><b>${esc(t.title)}</b><small>${esc(t.artist)}</small></div></div>`).join('')||'<div class="empty">В базе пока нет треков</div>');
-    ov.onclick=e=>{const r=e.target.closest('[data-pick]');if(!r)return;const id=tr[+r.dataset.pick].id;PICK.has(id)?PICK.delete(id):PICK.add(id);r.classList.toggle('sel')};
-    ov.onclose=()=>{pk.textContent='Добавить трек'+(PICK.size?' ('+PICK.size+')':'')}};
-  pc.onclick=async()=>{const ti=pn2.value.trim();if(!ti)return toast('Введите название');pc.disabled=true;
-    const cvr=coverFile?await putImage('covers',coverFile):null;
-    const {data,error}=await sb.from('playlists').insert({owner_id:S.user.id,title:ti,cover_url:cvr,is_public:pr.value==='1'}).select('id').single();
-    if(error){pc.disabled=false;return toast('Ошибка: '+error.message)}
-    if(PICK.size)await sb.from('playlist_tracks').insert([...PICK].map((t,i)=>({playlist_id:data.id,track_id:t,position:i})));
-    d.close();toast('Плейлист создан');go(view)};
-}
-async function openPlaylist(id){
-  const [p,t,lk]=await Promise.all([sb.from('playlists').select('*').eq('id',id).single(),sb.from('playlist_tracks').select('position,tracks(*)').eq('playlist_id',id).order('position'),
-    S?sb.from('playlist_likes').select('*').match({user_id:S.user.id,playlist_id:id}):{data:[]}]);
-  const tr=(t.data||[]).map(x=>x.tracks).filter(Boolean);let on=(lk.data||[]).length>0;
-  const el=openOv(p.data?p.data.title:'Плейлист',lst(tr,trow)||'<div class="empty">В плейлисте пока нет треков</div>',`<button class="ib" id="plk" style="color:var(--accent)">${on?'♥':'♡'}</button>`);
-  el.querySelector('#plk').onclick=async e=>{if(!S)return signIn();const m={user_id:S.user.id,playlist_id:id};
-    on?await sb.from('playlist_likes').delete().match(m):await sb.from('playlist_likes').insert(m);on=!on;e.target.textContent=on?'♥':'♡'};
-}
-async function openUser(id){
-  if(typeof id!=='string')return;
-  const [s,t,f]=await Promise.all([stats(id),TQ().eq('uploader_id',id).order('created_at',{ascending:false}),S?sb.from('follows').select('*').match({follower_id:S.user.id,following_id:id}):{data:[]}]);
-  let on=(f.data||[]).length>0;const mine=S&&S.user.id===id;
-  const el=openOv(s.username,`<div class="pf">${ava(s,80)}<h1>${esc(s.username)}${s.is_admin?'<span class="vf">✓</span>':''}${medalOf(s)}</h1>${badgeChip(s)}<div class="cnt"><div><b>${s.fr}</b><small>подписчиков</small></div><div><b>${s.fg}</b><small>подписок</small></div></div>
-    ${mine?'':`<button class="btn pri" id="fw">${on?'Вы подписаны':'Подписаться'}</button>`}</div>${(!mine&&s.priv&&s.priv.hide_uploads)?'<div class="empty" style="padding:18px 0;text-align:center">Пользователь скрыл свои загрузки</div>':lst(t.data||[],trow)}`);
-  const b=el.querySelector('#fw');if(b)b.onclick=async()=>{if(!S)return signIn();const m={follower_id:S.user.id,following_id:id};
-    on?await sb.from('follows').delete().match(m):await sb.from('follows').insert(m);on=!on;b.textContent=on?'Вы подписаны':'Подписаться'};
-}
-async function editProfile(){
-  const s=await stats(S.user.id),st=s.style||{},PAL=['#4fd6b4','#4a7cf0','#a78bfa','#f472b6','#fbbf24'];
-  const bl=((await sb.from('user_badges').select('badges(*)').eq('user_id',S.user.id)).data||[]).map(x=>x.badges).filter(Boolean);
-  const base={username:s.username,bio:s.bio||'',accent:st.accent||PAL[0],frame:st.frame||'ring',bmode:st.bmode||'fade',badge:s.pinned_badge_id||null};let cur={...base},af=null,aurl=null;
-  const el=openOv('Изменить профиль',`<div id="pvw"></div><button class="mrow" id="pa"><span class="mi-ic">${ic('user')}</span><span>Сменить фото</span>${ic('more')}</button><input type="file" id="paf" accept="image/*" hidden>
-    <input class="in" id="pnm" maxlength="24" placeholder="Имя" value="${esc(base.username)}"><textarea class="in" id="pbio" maxlength="80" rows="2" placeholder="О себе">${esc(base.bio)}</textarea>
-    <div class="sh3">Цвет профиля</div><div class="pal">${PAL.map(c=>`<button class="swt" data-c="${c}" style="--c:${c}"></button>`).join('')}</div>
-    <div class="sh3">Рамка аватара</div><div class="seg"><button data-f="ring">Кольцо</button><button data-f="none">Без рамки</button></div>
-    <div class="sh3" style="margin-top:14px">Отображение бейджа</div><div class="seg"><button data-bm="fade">Плавно</button><button data-bm="tile">Плитка</button><button data-bm="off">Скрыть</button></div>`,'<button class="ib" id="psv" style="width:auto;padding:0 16px;font-weight:600;color:var(--accent)" disabled>Готово</button>');
-  const dirty=()=>cur.username!==base.username||cur.bio!==base.bio||cur.accent!==base.accent||cur.frame!==base.frame||cur.badge!==base.badge||cur.bmode!==base.bmode||!!af;
-  const paint=()=>{el.querySelector('#pvw').innerHTML=profCard({...s,username:cur.username||'Имя',bio:cur.bio,style:{accent:cur.accent,frame:cur.frame,bmode:cur.bmode},avatar_url:aurl||s.avatar_url,pb:bl.find(b=>b.id===cur.badge)||null},1);hydrate(el);
-    el.querySelectorAll('[data-c]').forEach(b=>b.classList.toggle('on',b.dataset.c===cur.accent));el.querySelectorAll('[data-f]').forEach(b=>b.classList.toggle('on',b.dataset.f===cur.frame));el.querySelectorAll('[data-bm]').forEach(b=>b.classList.toggle('on',b.dataset.bm===cur.bmode));
-    el.querySelector('#psv').disabled=!dirty()||!cur.username.trim()};
-  const pickBadge=()=>{const d=sheet(`<h2>Бейдж</h2>${bl.length?`<div class="bgrid">${bl.map(b=>`<button class="bpk${b.id===cur.badge?' on':''}" data-bid="${b.id}">${bimg(b)}<small>${esc(b.title)}</small></button>`).join('')}</div>`:'<div class="empty" style="padding:6px 0 12px">У вас пока нет бейджей</div>'}${cur.badge?'<button class="btn dng" data-bid="">Убрать бейдж</button>':''}`);
-    d.onclick=e=>{const b=e.target.closest('[data-bid]');if(!b)return;cur.badge=b.dataset.bid||null;d.close();paint()}};
-  el.addEventListener('input',e=>{if(e.target.id==='pnm')cur.username=e.target.value;if(e.target.id==='pbio')cur.bio=e.target.value;paint()});
-  el.addEventListener('click',e=>{const c=e.target.closest('[data-c]'),f=e.target.closest('[data-f]'),bm=e.target.closest('[data-bm]');if(bm){cur.bmode=bm.dataset.bm;paint()}if(c){cur.accent=c.dataset.c;paint()}if(f){cur.frame=f.dataset.f;paint()}if(e.target.closest('#pa'))el.querySelector('#paf').click();if(e.target.closest('[data-bpick]'))pickBadge()});
-  el.querySelector('#paf').onchange=e=>{af=e.target.files[0];if(af){aurl=URL.createObjectURL(af);paint()}};
-  el.querySelector('#psv').onclick=async e=>{const b=e.currentTarget;b.disabled=true;
-    const u={username:cur.username.trim(),bio:cur.bio.trim(),style:{accent:cur.accent,frame:cur.frame,bmode:cur.bmode},pinned_badge_id:cur.badge};
-    if(af){const url=await putImage('avatars',af);if(url)u.avatar_url=url}
-    const r=await sb.from('profiles').update(u).eq('id',S.user.id);
-    if(r.error){b.disabled=false;return toast(r.error.code==='23505'||/unique/.test(r.error.message)?'Это имя уже занято':'Ошибка: '+r.error.message)}
-    ME={...ME,...u};setNavAvatar();el.close();toast('Профиль обновлён');profile()};
-  paint();
-}
-async function showStats(){
-  const s=await stats(S.user.id);
-  const tiles=[['Просмотры',s.profile_views||0],['Подписчики',s.fr],['Подписки',s.fg],['Треков',s.up],['Лайков',s.lk],['Дней',s.ds],['Ачивок',s.ac]];
-  sheet(`<h2>СтатисСтатис
+    const ov=openOv('Выберите треки',tr.map((t,i)=>`<div class="row pick${PICK.has(t.id)?' sel':''}" data-pick="${i}">${cov(t.artwork_url)}<div class="t"><b>${esc(t.title)}</b><small>${esc(t.artist)}</small></div></div>`).join('')||'<div c
