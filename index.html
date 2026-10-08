@@ -4,14 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0d1512">
-<title>Orenix Music v0.4.4</title>
-<link rel="stylesheet" href="/style.css?v=0.4.4">
+<title>Orenix Music v0.4.5</title>
+<link rel="stylesheet" href="/style.css?v=0.4.5">
 </head>
 <body>
 <div id="tb"></div>
 <div id="gi"><img src="/logo.png" alt="Orenix"><span>music</span></div>
 <main id="app"></main>
 
+<div id="dock">
 <div id="mp" hidden><div class="vinyl" id="vn"><img id="mpc" class="cov" alt=""></div><div class="t"><b id="np"></b><small id="na"></small></div><button class="pb2" id="lk" aria-label="Нравится"></button><button class="pb2 main" id="pp" aria-label="Играть"></button><button class="pb2" id="nx" aria-label="Дальше"></button></div>
 
 <div class="nav"><div class="nav-island" id="ni"><span class="nav-ind"></span>
@@ -20,18 +21,19 @@
   <button class="nav-btn" data-go="search" aria-label="Поиск"><svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></button>
   <button class="nav-btn" data-go="profile" aria-label="Профиль"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg></button>
 </div></div>
+</div>
 <div id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsmediatags@3.9.7/dist/jsmediatags.min.js"></script>
 <script>
-const VERSION='v0.4.4';
+const VERSION='v0.4.5';
 const SB_URL='https://pehcelgdqtekkknpqvaa.supabase.co',SB_KEY='sb_publishable_0rAsicZ1ZzIC2qO6dJ-saQ_XBmlxVPc';
 const sb=window.supabase.createClient(SB_URL,SB_KEY);
 const $=id=>document.getElementById(id), MAX=7*1024*1024;
 const BLANK='data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
 const AWARDS=[[1,'Первый день'],[7,'Неделя'],[30,'Месяц'],[100,'100 дней'],[365,'Год']];
-let UNREAD=0; let ME=null; const LIKED=new Set(); let S=null, admin=false, view='home', L=[], MORE={}, queue=[], qi=-1, coverFile=null, PICK=new Set();
+let SET={n_follow:true,n_top:true,autocache:false,wifi:true,cache_mb:200};const DEF={...SET};let UNREAD=0; let ME=null; const LIKED=new Set(); let S=null, admin=false, view='home', L=[], MORE={}, queue=[], qi=-1, coverFile=null, PICK=new Set();
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const soon=()=>toast('Скоро');
 function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('on'),2200)}
@@ -50,6 +52,7 @@ const I={set:'<path d="M4 7h9M17 7h3M4 12h3M11 12h9M4 17h11M19 17h1"/><circle cx
   play:'<path d="M8.5 5.8v12.4a.8.8 0 0 0 1.2.7l10-6.2a.8.8 0 0 0 0-1.4l-10-6.2a.8.8 0 0 0-1.2.7z"/>',
   pause:'<rect x="6.5" y="5" width="3.8" height="14" rx="1.4"/><rect x="13.7" y="5" width="3.8" height="14" rx="1.4"/>',
   stop:'<rect x="6" y="6" width="12" height="12" rx="3.2"/>',
+  skip:'<path d="M6.5 5.8v12.4a.8.8 0 0 0 1.2.7l9-6.2a.8.8 0 0 0 0-1.4l-9-6.2a.8.8 0 0 0-1.2.7z"/><rect x="18" y="5" width="2.6" height="14" rx="1.2"/>',
   tri:'<path d="M7.5 5.8v12.4a.8.8 0 0 0 1.2.7l9.6-6.2a.8.8 0 0 0 0-1.4L8.7 5.1a.8.8 0 0 0-1.2.7z"/>',
   arrow:'<path d="M5 12h14M13 6l6 6-6 6"/>',stats:'<path d="M5 20V10M12 20V4M19 20v-7"/>',
   award:'<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>',badge:'<path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/>',more:'<path d="M9 5l7 7-7 7"/>',dir:'<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>'};
@@ -63,7 +66,7 @@ const ava=(p,n=40)=>p.avatar_url?`<img class="av" style="width:${n}px;height:${n
 function lst(list,fn){const k=L.push(list)-1;return list.map((x,i)=>fn(x,i,k)).join('')}
 const tcard=(t,i,k)=>`<div class="card" data-l="${k}" data-i="${i}">${cov(t.artwork_url)}<button class="act" data-like>♥</button>${admin?'<button class="act del" data-del>✕</button>':''}<b>${esc(t.title)}</b><small>${esc(t.artist)}</small></div>`;
 const dur=ms=>ms?String(Math.floor(ms/60000)).padStart(2,'0')+':'+String(Math.floor(ms/1000)%60).padStart(2,'0'):'';
-const trk=(t,i,k,rank)=>`<div class="tr" data-l="${k}" data-i="${i}">${rank?`<span class="rk">${i+1}</span>`:''}${cov(t.artwork_url)}<div class="t"><b>${esc(t.title)}</b><small>${esc(t.artist)}</small></div><span class="du">${dur(t.duration_ms)}</span><button class="x" data-menu aria-label="Меню">${ic('dots')}</button></div>`;
+const trk=(t,i,k,rank)=>`<div class="tr" data-l="${k}" data-i="${i}">${rank?`<span class="rk">${i<3?`<span class="md g${i+1}">${i+1}</span>`:i+1}</span>`:''}${cov(t.artwork_url)}<div class="t"><b>${esc(t.title)}</b><small>${esc(t.artist)}</small></div><span class="du">${dur(t.duration_ms)}</span><button class="x" data-menu aria-label="Меню">${ic('dots')}</button></div>`;
 const trow=(t,i,k)=>trk(t,i,k,0);
 const colsTr=(l,rank)=>l.length?`<div class="tc">${lst(l,(t,i,k)=>trk(t,i,k,rank))}</div>`:'<div class="empty">Пока пусто</div>';
 const pcard=p=>`<div class="card" data-p="${p.id}">${cov(p.cover_url)}<b>${esc(p.title)}</b><small>плейлист</small></div>`;
@@ -92,7 +95,7 @@ async function play(i){
   qi=i;const t=queue[i];if(!t||!t.stream_url)return step(1);
   let src=t.stream_url;
   try{const c=await caches.open('orx-audio'),r=await c.match(src);if(r)src=URL.createObjectURL(await r.blob())}catch(e){}
-  au.src=src;try{await au.play()}catch(e){}
+  au.src=src;try{await au.play()}catch(e){}autoCache(t.stream_url).catch(()=>{});
   $('mp').hidden=false;np.textContent=t.title;na.textContent=t.artist;mpc.dataset.src=t.artwork_url||'';cached(mpc);paintHeart();
   sb.rpc('play_track',{tid:t.id}).then(()=>{},()=>{});
   if('mediaSession' in navigator){navigator.mediaSession.metadata=new MediaMetadata({title:t.title,artist:t.artist});
@@ -116,9 +119,12 @@ async function del(t,el){
 const TQ=()=>sb.from('tracks').select('*').eq('source','upload');
 async function stats(id){
   const c=(t,col)=>sb.from(t).select('*',{count:'exact',head:true}).eq(col,id);
-  const [p,fr,fg,up,lk,ds]=await Promise.all([sb.from('profiles').select('*').eq('id',id).single(),c('follows','following_id'),c('follows','follower_id'),
-    sb.from('tracks').select('*',{count:'exact',head:true}).eq('uploader_id',id).eq('source','upload'),c('likes','user_id'),c('activity_days','user_id')]);
-  return {...p.data,fr:fr.count||0,fg:fg.count||0,up:up.count||0,lk:lk.count||0,ds:ds.count||0};
+  const [p,fr,fg,up,lk,ds,top,ac]=await Promise.all([sb.from('profiles').select('*').eq('id',id).single(),c('follows','following_id'),c('follows','follower_id'),
+    sb.from('tracks').select('*',{count:'exact',head:true}).eq('uploader_id',id).eq('source','upload'),c('likes','user_id'),c('activity_days','user_id'),
+    TQ().order('plays',{ascending:false}).limit(3),c('user_achievements','user_id')]);
+  let pb=null;const pid=p.data&&p.data.pinned_badge_id;if(pid)pb=(await sb.from('badges').select('*').eq('id',pid).maybeSingle()).data;
+  const mi=(top.data||[]).findIndex(x=>x.uploader_id===id);
+  return {...p.data,fr:fr.count||0,fg:fg.count||0,up:up.count||0,lk:lk.count||0,ds:ds.count||0,ac:ac.count||0,pb,medal:mi>=0?mi+1:0};
 }
 async function shrink(b,max=512){const im=await createImageBitmap(b),k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement('canvas');
   c.width=im.width*k;c.height=im.height*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);return new Promise(r=>c.toBlob(r,'image/jpeg',.85))}
@@ -145,21 +151,32 @@ async function lib(){
   app.innerHTML=hd({plus:1})+sec('Понравившиеся треки',colsTr(liked.slice(0,11)),'liked')+sec('Плейлисты',car(pls.slice(0,10),pcard),pls.length>10?'pls':'',`<button class="ib" data-addpl>${ic('plus')}</button>`)+sec('Загруженные',colsTr(mm.slice(0,11)),'mine');
   hydrate(app);
 }
+const HK='orx_hist',getH=()=>{try{return JSON.parse(localStorage[HK]||'[]')}catch(e){return[]}},setH=a=>{localStorage[HK]=JSON.stringify(a.slice(0,10))},addH=q=>setH([q,...getH().filter(x=>x!==q)]);
+async function searchHome(){
+  const h=getH();
+  res.innerHTML=(h.length?`<div class="sh3 sr">История <button class="lnk" data-sclr>Очистить</button></div><div class="chips">${h.map(x=>`<span class="chip2"><button data-sq="${esc(x)}">${esc(x)}</button><button data-sx="${esc(x)}" aria-label="Удалить">×</button></span>`).join('')}</div>`:'')+'<div class="sh3">Популярное</div><div class="chips" id="popc"><small>Загрузка...</small></div>';
+  const {data}=await sb.from('popular_searches').select('query'),pc=document.getElementById('popc');
+  if(pc)pc.innerHTML=(data||[]).map((x,i)=>`<button class="chip2 pop" data-sq="${esc(x.query)}"><i>${i+1}</i>${esc(x.query)}</button>`).join('')||'<small>Пока пусто</small>';
+}
 function search(){
   app.innerHTML=hd()+'<div class="pad"><input class="in" id="q" placeholder="Треки, плейлисты, пользователи"><div id="res"></div></div>';
-  let tm;$('q').oninput=()=>{clearTimeout(tm);tm=setTimeout(async()=>{
-    const s=$('q').value.trim().replace(/[,()%*]/g,' ').trim();if(!s){res.innerHTML='';return}
+  app.onclick=openUser;searchHome();let tm,lg;
+  $('q').oninput=()=>{clearTimeout(tm);clearTimeout(lg);tm=setTimeout(async()=>{
+    const s=$('q').value.trim().replace(/[,()%*]/g,' ').trim();if(!s){searchHome();return}
+    res.textContent='Поиск...';
     const [t,p,u]=await Promise.all([TQ().or(`title.ilike.%${s}%,artist.ilike.%${s}%`).limit(20),sb.from('playlists').select('*').eq('is_public',true).ilike('title','%'+s+'%').limit(10),sb.from('profiles').select('id,username,bio,avatar_url').ilike('username','%'+s+'%').limit(10)]);
     L=[];const e='<div class="empty" style="padding:0">Ничего нет</div>';
-    res.innerHTML=`<h2>Треки</h2>${lst(t.data||[],trow)||e}<h2>Плейлисты</h2>${(p.data||[]).map(prow).join('')||e}<h2>Пользователи</h2>${(u.data||[]).map(urow).join('')||e}`;hydrate(res)},350)};
+    res.innerHTML=`<h2>Треки</h2>${lst(t.data||[],trow)||e}<h2>Плейлисты</h2>${(p.data||[]).map(prow).join('')||e}<h2>Пользователи</h2>${(u.data||[]).map(urow).join('')||e}`;hydrate(res)},350);
+    lg=setTimeout(()=>{const v=$('q').value.trim();if(v.length>=2){addH(v.toLowerCase());sb.rpc('log_search',{q:v}).then(()=>{},()=>{})}},1300)};
 }
+const medalOf=s=>s.medal?`<span class="md g${s.medal}" title="№${s.medal} в чарте">${s.medal}</span>`:'';
+const badgeChip=s=>s.pb?`<span class="bchip" style="--bc:${esc(s.pb.color)}">${esc(s.pb.symbol)} ${esc(s.pb.title)}</span>`:'';
+const profCard=s=>{const st=s.style||{};return `<div class="pcard${st.frame==='none'?' nofr':''}" style="--pa:${esc(st.accent||'#4fd6b4')}">${ava(s,92)}<div class="pc-main"><div class="pc-name"><h1>${esc(s.username)}</h1>${s.is_admin?'<span class="vf">✓</span>':''}${medalOf(s)}</div>${s.bio?`<div class="pc-bio">${esc(s.bio)}</div>`:''}<div class="pc-cnt"><div><b>${s.fr}</b><small>подписчиков</small></div><i></i><div><b>${s.fg}</b><small>подписок</small></div></div>${badgeChip(s)}</div><div class="pc-ban">—</div></div>`};
 async function profile(){
   if(!S)return needLogin();app.innerHTML=hd({set:1})+'<div class="empty">Загрузка...</div>';
-  const s=await stats(S.user.id),aw=AWARDS.filter(a=>s.ds>=a[0]).pop();
-  const row=(a,ic2,t,cls)=>`<button class="mrow ${cls||''}" ${a}><span class="mi-ic">${ic(ic2)}</span><span>${t}</span>${ic('more')}</button>`;
-  app.innerHTML=hd({set:1})+`<div class="pcard">${ava(s,92)}<div class="pc-main"><div class="pc-name"><h1>${esc(s.username)}</h1>${s.is_admin?'<span class="vf">✓</span>':''}</div>
-    <div class="pc-cnt"><div><b>${s.fr}</b><small>подписчиков</small></div><i></i><div><b>${s.fg}</b><small>подписок</small></div></div>${aw?`<span class="chip">★ ${aw[1]}</span>`:''}</div><div class="pc-ban">—</div></div>
-    <div class="pad" style="margin-top:14px">${row('data-pe','user','Изменить профиль')}${row('data-st','stats','Статистика')}${row('data-soon','award','Достижения')}${row('data-soon','badge','Бейджи')}${row('data-set2','set','Настройки')}${row('data-out','back','Выйти','dng')}</div>`;
+  const s=await stats(S.user.id);ME={...ME,...s};
+  const row=(a,i,t,cls)=>`<button class="mrow ${cls||''}" ${a}><span class="mi-ic">${ic(i)}</span><span>${t}</span>${ic('more')}</button>`;
+  app.innerHTML=hd({set:1})+profCard(s)+`<div class="pad" style="margin-top:14px">${row('data-pe','user','Изменить профиль')}${row('data-st','stats','Статистика')}${row('data-ach','award','Достижения')}${row('data-bdg','badge','Бейджи')}${row('data-set2','set','Настройки')}${row('data-out','back','Выйти','dng')}</div>`;
   hydrate(app);
 }
 const go=n=>{view=n;document.querySelectorAll('.nav-btn').forEach((b,i)=>{const a=b.dataset.go===n;b.classList.toggle('active',a);if(a)$('ni').style.setProperty('--i',i)});scrollTo(0,0);({home,lib,search,profile})[n]()};
@@ -217,7 +234,7 @@ function openMenu(t,it){
     if(a==='next'){if(qi<0||!queue.length)playNow(t);else{queue.splice(qi+1,0,t);toast('Сыграет следующим')}}
     if(a==='queue'){if(qi<0||!queue.length)playNow(t);else{queue.push(t);toast('Добавлено в очередь')}}
     if(a==='pl')pickPlaylist(t);
-    if(a==='dl'){toast('Скачиваю...');try{await (await caches.open('orx-audio')).add(t.stream_url);toast('Трек сохранён в кэш')}catch(x){toast('Не удалось скачать')}}
+    if(a==='dl'){toast('Скачиваю...');try{await autoCache(t.stream_url,true);toast('Трек сохранён в кэш')}catch(x){toast('Не удалось скачать')}}
     if(a==='share'){if(navigator.share)navigator.share({title:t.title,text:t.title+' — '+t.artist,url:t.stream_url}).catch(()=>{});else{navigator.clipboard.writeText(t.stream_url);toast('Ссылка скопирована')}}
     if(a==='del')del(t,it);
   };
@@ -231,6 +248,18 @@ async function pickPlaylist(t){
     const x=await sb.from('playlist_tracks').insert({playlist_id:r.dataset.pid,track_id:t.id,position:count||0});
     d.close();toast(x.error?(x.error.code==='23505'?'Уже в плейлисте':'Ошибка'):'Добавлено в плейлист')};
 }
+const saveSet=()=>sb.from('user_settings').upsert({user_id:S.user.id,data:SET});
+async function loadSettings(){const r=await sb.from('user_settings').select('data').eq('user_id',S.user.id).maybeSingle();SET={...DEF,...(r.data?r.data.data:{})}}
+const sw=(k,t,d)=>`<div class="swr"><div><b>${t}</b>${d?`<small style="display:block">${d}</small>`:''}</div><button class="sw${SET[k]?' on':''}" data-sw="${k}"></button></div>`;
+function bindSw(el,after){el.addEventListener('click',async e=>{const b=e.target.closest('[data-sw]');if(!b)return;const k=b.dataset.sw;SET[k]=!SET[k];b.classList.toggle('on',SET[k]);await saveSet();if(after)after(k)})}
+async function autoCache(url,force){
+  if(!force){if(!SET.autocache)return;const cn=navigator.connection;if(SET.wifi&&cn&&cn.type&&cn.type!=='wifi')return}
+  const c=await caches.open('orx-audio');if(await c.match(url))return;
+  const r=await fetch(url);if(!r.ok)throw 0;const b=await r.clone().blob();await c.put(url,r);
+  const idx=JSON.parse(localStorage.orx_idx||'[]');idx.push({u:url,s:b.size});let tot=idx.reduce((a,x)=>a+x.s,0);const lim=SET.cache_mb*1048576;
+  while(tot>lim&&idx.length>1){const o=idx.shift();tot-=o.s;await c.delete(o.u)}
+  localStorage.orx_idx=JSON.stringify(idx);
+}
 function renameSheet(el){
   const d=sheet(`<h2>Имя</h2><input class="in" id="nm2" value="${esc(ME.username)}" maxlength="24"><button class="btn pri" id="sv2">Сохранить</button>`);
   sv2.onclick=async()=>{const v=nm2.value.trim();if(!v)return toast('Введите имя');
@@ -238,18 +267,94 @@ function renameSheet(el){
     if(r.error)return toast(r.error.code==='23505'||/unique/.test(r.error.message)?'Это имя уже занято':'Ошибка: '+r.error.message);
     ME={...ME,username:v};const sn=el.querySelector('#sn');if(sn)sn.textContent=v;d.close();toast('Имя изменено')};
 }
-function openSettings(){
-  if(!S)return signIn();
-  const el=openOv('Настройки профиля',`<button class="mrow" data-s="ava"><span class="mi-ic" id="sa">${ava(ME||{username:'?'},36)}</span><span>Аватар</span>${ic('more')}</button>
+function secAccount(){
+  const el=openOv('Аккаунт',`<div class="swr"><div><b>Почта</b><small style="display:block">${esc(S.user.email||'—')}</small></div></div><div class="swr"><div><b>Способ входа</b><small style="display:block">Google</small></div></div>
+    <button class="mrow" data-s="ava"><span class="mi-ic" id="sa">${ava(ME||{username:'?'},36)}</span><span>Аватар</span>${ic('more')}</button>
     <button class="mrow" data-s="name"><span class="mi-ic">${ic('user')}</span><span>Имя<small style="display:block" id="sn">${esc(ME&&ME.username||'')}</small></span>${ic('more')}</button>
     <button class="mrow" data-soon><span class="mi-ic">${ic('badge')}</span><span>Баннер</span><span class="tag">Скоро</span></button>
-    <button class="mrow" data-soon><span class="mi-ic">${ic('award')}</span><span>Достижения</span><span class="tag">Скоро</span></button>
-    <div class="ft">orenix music by <a href="https://t.me/orenixpro" target="_blank" rel="noopener">@orenixpro</a> ${VERSION}</div><input type="file" id="sf" accept="image/*" hidden>`);
+    <button class="mrow dng" data-soon><span class="mi-ic">${ic('trash')}</span><span>Удалить аккаунт</span><span class="tag">Скоро</span></button><input type="file" id="sf" accept="image/*" hidden>`);
   el.addEventListener('click',e=>{const b=e.target.closest('[data-s]');if(!b)return;if(b.dataset.s==='ava')el.querySelector('#sf').click();if(b.dataset.s==='name')renameSheet(el)});
   el.querySelector('#sf').onchange=async e=>{const f=e.target.files[0];if(!f)return;toast('Загружаю...');
     const u=await putImage('avatars',f);if(!u)return toast('Не удалось загрузить');
     const r=await sb.from('profiles').update({avatar_url:u}).eq('id',S.user.id);if(r.error)return toast('Ошибка: '+r.error.message);
     ME={...ME,avatar_url:u};setNavAvatar();el.querySelector('#sa').innerHTML=ava(ME,36);hydrate(el);toast('Аватар обновлён')};
+}
+function secNotif(){const el=openOv('Уведомления',sw('n_follow','Новые подписчики')+sw('n_top','Трек стал №1')+'<div class="ft" style="padding:12px 0">Бейджи и ачивки приходят всегда</div>');bindSw(el,countUnread)}
+function secPriv(){
+  const on0=!!(ME&&ME.priv&&ME.priv.hide_uploads);
+  const el=openOv('Конфиденциальность',`<div class="swr"><div><b>Скрыть мои загрузки</b><small style="display:block">Другие не увидят список ваших треков в профиле</small></div><button class="sw${on0?' on':''}" id="pvh"></button></div>`);
+  el.querySelector('#pvh').onclick=async e=>{const on=!e.currentTarget.classList.contains('on'),pr={...(ME.priv||{}),hide_uploads:on};
+    const r=await sb.from('profiles').update({priv:pr}).eq('id',S.user.id);if(r.error)return toast('Ошибка');ME.priv=pr;e.currentTarget.classList.toggle('on',on)};
+}
+async function secCache(){
+  const est=navigator.storage&&navigator.storage.estimate?await navigator.storage.estimate():{},mb=(est.usage||0)/1048576;
+  const el=openOv('Хранилище',sw('autocache','Автокэш треков','Сохранять прослушанные треки на устройство')+sw('wifi','Только по Wi-Fi','Если браузер сообщает тип сети')+
+    `<div class="swr"><div><b>Лимит кэша</b></div><select class="in" id="cl" style="width:auto;margin:0">${[50,100,200,500].map(n=>`<option value="${n}"${SET.cache_mb===n?' selected':''}>${n} МБ</option>`).join('')}</select></div>
+    <div class="swr"><div><b>Занято на устройстве</b><small style="display:block" id="cu">${mb.toFixed(1)} МБ</small></div></div><button class="btn dng" id="cc">Очистить кэш</button>`);
+  bindSw(el);el.querySelector('#cl').onchange=async e=>{SET.cache_mb=+e.target.value;await saveSet()};
+  el.querySelector('#cc').onclick=async()=>{await caches.delete('orx-audio');await caches.delete('orx-covers');localStorage.removeItem('orx_idx');el.querySelector('#cu').textContent='0.0 МБ';toast('Кэш очищен')};
+}
+function openSettings(){
+  if(!S)return signIn();
+  const r=(k,i,t)=>`<button class="mrow" data-sec="${k}"><span class="mi-ic">${ic(i)}</span><span>${t}</span>${ic('more')}</button>`;
+  const el=openOv('Настройки',r('acc','user','Аккаунт')+r('ntf','bell','Уведомления')+r('prv','badge','Конфиденциальность')+r('cch','dl','Хранилище и автокэш')+(admin?r('adm','award','Админ-панель'):'')+
+    `<div class="ft">orenix music by <a href="https://t.me/orenixpro" target="_blank" rel="noopener">@orenixpro</a> ${VERSION}</div>`);
+  el.addEventListener('click',e=>{const b=e.target.closest('[data-sec]');if(b)({acc:secAccount,ntf:secNotif,prv:secPriv,cch:secCache,adm:openAdmin})[b.dataset.sec]()});
+}
+async function openBadges(){
+  const [r,me]=await Promise.all([sb.from('user_badges').select('badges(*)').eq('user_id',S.user.id),sb.from('profiles').select('pinned_badge_id').eq('id',S.user.id).single()]);
+  const bl=(r.data||[]).map(x=>x.badges).filter(Boolean),pid=me.data&&me.data.pinned_badge_id;
+  const el=openOv('Бейджи',bl.map(b=>`<div class="row"><span class="bsym" style="--bc:${esc(b.color)}">${esc(b.symbol)}</span><div class="t"><b>${esc(b.title)}</b><small>${esc(b.descr)}</small></div><button class="btn" style="width:auto;margin:0;padding:8px 14px" data-pin="${b.id}">${b.id===pid?'Открепить':'Закрепить'}</button></div>`).join('')||'<div class="empty" style="padding:24px 0;text-align:center">Бейджей пока нет</div>');
+  el.addEventListener('click',async e=>{const b=e.target.closest('[data-pin]');if(!b)return;const on=b.textContent==='Закрепить';
+    const x=await sb.from('profiles').update({pinned_badge_id:on?b.dataset.pin:null}).eq('id',S.user.id);if(x.error)return toast('Ошибка');
+    el.querySelectorAll('[data-pin]').forEach(o=>o.textContent='Закрепить');if(on)b.textContent='Открепить';toast(on?'Бейдж закреплён':'Бейдж откреплён');profile()});
+}
+async function openAch(){
+  const uid=S.user.id,[a,ua,s,pl]=await Promise.all([sb.from('achievements').select('*').eq('is_active',true).order('threshold'),sb.from('user_achievements').select('achievement_id').eq('user_id',uid),stats(uid),sb.from('tracks').select('plays').eq('uploader_id',uid)]);
+  const got=new Set((ua.data||[]).map(x=>x.achievement_id)),vals={days_active:s.ds,uploads:s.up,followers:s.fr,likes_given:s.lk,plays_total:(pl.data||[]).reduce((n,x)=>n+x.plays,0)};
+  openOv('Достижения',(a.data||[]).map(x=>{const v=Math.min(vals[x.metric]||0,x.threshold),ok=got.has(x.id);
+    return `<div class="row"><span class="bsym${ok?'':' off'}" style="--bc:#fbbf24">★</span><div class="t"><b>${esc(x.title)}</b><small>${esc(x.descr)}</small>${ok?'':`<div class="bar"><i style="width:${Math.round(v/x.threshold*100)}%"></i></div><small>${v} из ${x.threshold}</small>`}</div>${ok?'<span class="tag">Получено</span>':''}</div>`}).join('')||'<div class="empty" style="padding:24px 0;text-align:center">Достижений пока нет</div>');
+}
+const COLORS=['#4fd6b4','#4a7cf0','#a78bfa','#f472b6','#fbbf24','#e2716a'];
+function openAdmin(){
+  if(!admin)return;
+  const el=openOv('Админ-панель',`<button class="mrow" data-ad="b"><span class="mi-ic">${ic('badge')}</span><span>Бейджи</span>${ic('more')}</button><button class="mrow" data-ad="a"><span class="mi-ic">${ic('award')}</span><span>Ачивки</span>${ic('more')}</button>`);
+  el.addEventListener('click',e=>{const b=e.target.closest('[data-ad]');if(b)b.dataset.ad==='b'?adminBadges():adminAch()});
+}
+async function adminBadges(){
+  const {data}=await sb.from('badges').select('*').order('created_at');
+  const el=openOv('Бейджи (админ)',`<button class="btn pri" data-nb>Новый бейдж</button>`+(data||[]).map(b=>`<div class="row"><span class="bsym" style="--bc:${esc(b.color)}">${esc(b.symbol)}</span><div class="t"><b>${esc(b.title)}</b><small>${esc(b.descr)}</small></div><button class="ib" data-gv="${b.id}" aria-label="Выдать">${ic('qadd')}</button><button class="ib" data-bd="${b.id}" style="color:var(--danger)">${ic('trash')}</button></div>`).join(''));
+  el.addEventListener('click',async e=>{
+    if(e.target.closest('[data-nb]'))return newBadge(el);
+    const g=e.target.closest('[data-gv]');if(g)return giveBadge(g.dataset.gv);
+    const d=e.target.closest('[data-bd]');if(d&&confirm('Удалить бейдж?')){await sb.from('badges').delete().eq('id',d.dataset.bd);el.close();adminBadges()}});
+}
+function newBadge(el){
+  let col=COLORS[0];
+  const d=sheet(`<h2>Новый бейдж</h2><input class="in" id="bt" placeholder="Название"><input class="in" id="bd2" placeholder="Описание"><input class="in" id="bsy" maxlength="2" placeholder="Символ" value="★"><div class="pal">${COLORS.map(c=>`<button class="swt${c===col?' on':''}" data-c="${c}" style="--c:${c}"></button>`).join('')}</div><button class="btn pri" id="bsv">Создать</button>`);
+  d.addEventListener('click',e=>{const c=e.target.closest('[data-c]');if(c){col=c.dataset.c;d.querySelectorAll('[data-c]').forEach(b=>b.classList.toggle('on',b===c))}});
+  bsv.onclick=async()=>{const t=bt.value.trim();if(!t)return toast('Введите название');
+    const r=await sb.from('badges').insert({slug:'b'+Date.now().toString(36),title:t,descr:bd2.value.trim(),symbol:bsy.value.trim()||'★',color:col});
+    if(r.error)return toast('Ошибка: '+r.error.message);d.close();el.close();adminBadges();toast('Бейдж создан')};
+}
+function giveBadge(id){
+  const d=sheet(`<h2>Выдать или забрать</h2><input class="in" id="gu" placeholder="Имя пользователя"><button class="btn pri" id="gy">Выдать</button><button class="btn dng" id="gn">Забрать</button>`);
+  const act=async give=>{const r=await sb.rpc('admin_badge',{uname:gu.value,bid:id,give}),m={ok:give?'Бейдж выдан':'Бейдж забран',no_user:'Пользователь не найден',forbidden:'Нет прав'};
+    toast(r.error?'Ошибка':m[r.data]||'Ошибка');if(r.data==='ok')d.close()};
+  gy.onclick=()=>act(true);gn.onclick=()=>act(false);
+}
+async function adminAch(){
+  const [a,b]=await Promise.all([sb.from('achievements').select('*').order('threshold'),sb.from('badges').select('id,title')]);
+  const el=openOv('Ачивки (админ)',`<button class="btn pri" data-na>Новая ачивка</button>`+(a.data||[]).map(x=>`<div class="row"><span class="bsym" style="--bc:#fbbf24">★</span><div class="t"><b>${esc(x.title)}</b><small>${esc(x.metric)} ≥ ${x.threshold}</small></div><button class="ib" data-ad2="${x.id}" style="color:var(--danger)">${ic('trash')}</button></div>`).join(''));
+  el.addEventListener('click',async e=>{if(e.target.closest('[data-na]'))return newAch(el,b.data||[]);const d=e.target.closest('[data-ad2]');
+    if(d&&confirm('Удалить ачивку?')){await sb.from('achievements').delete().eq('id',d.dataset.ad2);el.close();adminAch()}});
+}
+function newAch(el,bl){
+  const M=[['days_active','Дней в приложении'],['uploads','Загружено треков'],['followers','Подписчиков'],['plays_total','Прослушиваний треков'],['likes_given','Поставлено лайков']];
+  const d=sheet(`<h2>Новая ачивка</h2><input class="in" id="at" placeholder="Название"><input class="in" id="ad3" placeholder="Описание"><select class="in" id="am">${M.map(m=>`<option value="${m[0]}">${m[1]}</option>`).join('')}</select><input class="in" id="ath" type="number" min="1" placeholder="Порог (число)"><select class="in" id="abg"><option value="">Без награды-бейджа</option>${bl.map(x=>`<option value="${x.id}">${esc(x.title)}</option>`).join('')}</select><button class="btn pri" id="asv">Создать</button>`);
+  asv.onclick=async()=>{const t=at.value.trim(),n=+ath.value;if(!t||!n)return toast('Название и порог обязательны');
+    const r=await sb.from('achievements').insert({code:'a'+Date.now().toString(36),title:t,descr:ad3.value.trim(),metric:am.value,threshold:n,days_required:0,reward_badge_id:abg.value||null});
+    if(r.error)return toast('Ошибка: '+r.error.message);d.close();el.close();adminAch();toast('Ачивка создана')};
 }
 (function(){const m=$('mp');let x0=0,y0=0,on=false;
   m.addEventListener('pointerdown',e=>{x0=e.clientX;y0=e.clientY;on=true});
@@ -260,18 +365,20 @@ function openSettings(){
 const ago=t=>{const m=Math.floor((Date.now()-new Date(t))/60000);if(m<1)return 'только что';if(m<60)return m+' мин назад';const h=Math.floor(m/60);if(h<24)return h+' ч назад';const d=Math.floor(h/24);if(d<7)return d+' дн назад';return new Date(t).toLocaleDateString('ru-RU',{day:'numeric',month:'long'})};
 const bdg=()=>UNREAD>0?`<i class="bd">${UNREAD>9?'9+':UNREAD}</i>`:'';
 function paintBell(){document.querySelectorAll('[data-bell]').forEach(b=>{const o=b.querySelector('.bd');if(o)o.remove();b.insertAdjacentHTML('beforeend',bdg())})}
+const allowed=()=>['badge','achievement',...(SET.n_follow?['follow']:[]),...(SET.n_top?['top_track']:[])];
+async function countUnread(){const r=await sb.from('notifications').select('*',{count:'exact',head:true}).eq('user_id',S.user.id).is('read_at',null).in('type',allowed());UNREAD=r.count||0;paintBell()}
 async function initNotifs(){
-  const r=await sb.from('notifications').select('*',{count:'exact',head:true}).eq('user_id',S.user.id).is('read_at',null);
-  UNREAD=r.count||0;paintBell();
-  sb.channel('notif-'+S.user.id).on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications',filter:'user_id=eq.'+S.user.id},()=>{UNREAD++;paintBell();toast('Новое уведомление')}).subscribe();
+  await countUnread();
+  sb.channel('notif-'+S.user.id).on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications',filter:'user_id=eq.'+S.user.id},p=>{if(allowed().includes(p.new.type)){UNREAD++;paintBell();toast('Новое уведомление')}}).subscribe();
 }
-const nrow=x=>x.type==='follow'
-  ?`<div class="row nr${x.read_at?'':' new'}"${x.actor?` data-u="${x.actor.id}"`:''}>${ava(x.actor||{username:'?'},48)}<div class="t"><b>${esc(x.actor?x.actor.username:'Пользователь')}</b><small>подписался на вас · ${ago(x.created_at)}</small></div></div>`
-  :`<div class="row nr${x.read_at?'':' new'}">${cov(x.track&&x.track.artwork_url)}<div class="t"><b>Ваш трек стал №1</b><small>«${esc(x.track?x.track.title:'')}» теперь самый прослушиваемый · ${ago(x.created_at)}</small></div></div>`;
+const nrow=x=>{const nw=x.read_at?'':' new';
+  if(x.type==='follow')return `<div class="row nr${nw}"${x.actor?` data-u="${x.actor.id}"`:''}>${ava(x.actor||{username:'?'},48)}<div class="t"><b>${esc(x.actor?x.actor.username:'Пользователь')}</b><small>подписался на вас · ${ago(x.created_at)}</small></div></div>`;
+  if(x.type==='top_track')return `<div class="row nr${nw}">${cov(x.track&&x.track.artwork_url)}<div class="t"><b>Ваш трек стал №1</b><small>«${esc(x.track?x.track.title:'')}» теперь самый прослушиваемый · ${ago(x.created_at)}</small></div></div>`;
+  return `<div class="row nr${nw}"><span class="bsym" style="--bc:${x.type==='badge'?'#4fd6b4':'#fbbf24'}">★</span><div class="t"><b>${x.type==='badge'?'Вам выдан бейдж':'Новая ачивка'}</b><small>«${esc(x.note||'')}» · ${ago(x.created_at)}</small></div></div>`};
 async function openNotifs(){
   if(!S){toast('Войдите, чтобы видеть уведомления');return signIn()}
   const {data}=await sb.from('notifications').select('*,actor:profiles!actor_id(id,username,avatar_url),track:tracks(id,title,artwork_url)').eq('user_id',S.user.id).order('created_at',{ascending:false}).limit(50);
-  const n=data||[],empty='<div class="empty" style="padding:24px 0;text-align:center">Пока нет уведомлений</div>';
+  const n=(data||[]).filter(x=>allowed().includes(x.type)),empty='<div class="empty" style="padding:24px 0;text-align:center">Пока нет уведомлений</div>';
   const el=openOv('Уведомления',`<div id="nl">${n.map(nrow).join('')||empty}</div>`,`<button class="ib" id="nclr" aria-label="Очистить">${ic('trash')}</button>`);
   el.querySelector('#nclr').onclick=async()=>{if(!n.length)return;await sb.from('notifications').delete().eq('user_id',S.user.id);el.querySelector('#nl').innerHTML=empty;n.length=0;UNREAD=0;paintBell();toast('Уведомления очищены')};
   if(UNREAD>0){await sb.from('notifications').update({read_at:new Date().toISOString()}).eq('user_id',S.user.id).is('read_at',null);UNREAD=0;paintBell()}
@@ -305,32 +412,38 @@ async function openPlaylist(id){
 async function openUser(id){
   const [s,t,f]=await Promise.all([stats(id),TQ().eq('uploader_id',id).order('created_at',{ascending:false}),S?sb.from('follows').select('*').match({follower_id:S.user.id,following_id:id}):{data:[]}]);
   let on=(f.data||[]).length>0;const mine=S&&S.user.id===id;
-  const el=openOv(s.username,`<div class="pf">${ava(s,80)}<h1>${esc(s.username)}${s.is_admin?'<span class="vf">✓</span>':''}</h1><div class="cnt"><div><b>${s.fr}</b><small>подписчиков</small></div><div><b>${s.fg}</b><small>подписок</small></div></div>
-    ${mine?'':`<button class="btn pri" id="fw">${on?'Вы подписаны':'Подписаться'}</button>`}</div>${lst(t.data||[],trow)}`);
+  const el=openOv(s.username,`<div class="pf">${ava(s,80)}<h1>${esc(s.username)}${s.is_admin?'<span class="vf">✓</span>':''}${medalOf(s)}</h1>${badgeChip(s)}<div class="cnt"><div><b>${s.fr}</b><small>подписчиков</small></div><div><b>${s.fg}</b><small>подписок</small></div></div>
+    ${mine?'':`<button class="btn pri" id="fw">${on?'Вы подписаны':'Подписаться'}</button>`}</div>${(!mine&&s.priv&&s.priv.hide_uploads)?'<div class="empty" style="padding:18px 0;text-align:center">Пользователь скрыл свои загрузки</div>':lst(t.data||[],trow)}`);
   const b=el.querySelector('#fw');if(b)b.onclick=async()=>{if(!S)return signIn();const m={follower_id:S.user.id,following_id:id};
     on?await sb.from('follows').delete().match(m):await sb.from('follows').insert(m);on=!on;b.textContent=on?'Вы подписаны':'Подписаться'};
 }
-function editProfile(){
-  coverFile=null;
-  sb.from('profiles').select('*').eq('id',S.user.id).single().then(({data:p})=>{
-    const d=sheet(`<h2>Изменить профиль</h2><div class="cpick"><div id="ap">${ava(p,72)}</div><button class="btn" id="ab">Сменить фото</button></div><input type="file" id="af" accept="image/*" hidden>
-      <input class="in" id="nm" placeholder="Имя" value="${esc(p.username)}"><button class="btn pri" id="sv">Сохранить</button>`);
-    ab.onclick=()=>af.click();af.onchange=e=>{coverFile=e.target.files[0];if(coverFile)ap.innerHTML=`<img class="av" style="width:72px;height:72px" src="${URL.createObjectURL(coverFile)}">`};
-    sv.onclick=async()=>{const u={username:nm.value.trim()};if(!u.username)return toast('Введите имя');sv.disabled=true;
-      if(coverFile)u.avatar_url=await putImage('avatars',coverFile);
-      const r=await sb.from('profiles').update(u).eq('id',S.user.id);
-      if(r.error){sv.disabled=false;return toast(r.error.message.includes('unique')?'Это имя уже занято':'Ошибка: '+r.error.message)}
-      ME={...ME,...u};setNavAvatar();d.close();toast('Сохранено');profile()};
-  });
+async function editProfile(){
+  const s=await stats(S.user.id),st=s.style||{},PAL=['#4fd6b4','#4a7cf0','#a78bfa','#f472b6','#fbbf24'];
+  const base={username:s.username,bio:s.bio||'',accent:st.accent||PAL[0],frame:st.frame||'ring'};let cur={...base},af=null,aurl=null;
+  const el=openOv('Изменить профиль',`<div id="pvw"></div><button class="mrow" id="pa"><span class="mi-ic">${ic('user')}</span><span>Сменить фото</span>${ic('more')}</button><input type="file" id="paf" accept="image/*" hidden>
+    <input class="in" id="pnm" maxlength="24" placeholder="Имя" value="${esc(base.username)}"><textarea class="in" id="pbio" maxlength="80" rows="2" placeholder="О себе">${esc(base.bio)}</textarea>
+    <div class="sh3">Цвет профиля</div><div class="pal">${PAL.map(c=>`<button class="swt" data-c="${c}" style="--c:${c}"></button>`).join('')}</div>
+    <div class="sh3">Рамка аватара</div><div class="seg"><button data-f="ring">Кольцо</button><button data-f="none">Без рамки</button></div>`,'<button class="ib" id="psv" style="width:auto;padding:0 16px;font-weight:600;color:var(--accent)" disabled>Готово</button>');
+  const dirty=()=>cur.username!==base.username||cur.bio!==base.bio||cur.accent!==base.accent||cur.frame!==base.frame||!!af;
+  const paint=()=>{el.querySelector('#pvw').innerHTML=profCard({...s,username:cur.username||'Имя',bio:cur.bio,style:{accent:cur.accent,frame:cur.frame},avatar_url:aurl||s.avatar_url});hydrate(el);
+    el.querySelectorAll('[data-c]').forEach(b=>b.classList.toggle('on',b.dataset.c===cur.accent));el.querySelectorAll('[data-f]').forEach(b=>b.classList.toggle('on',b.dataset.f===cur.frame));
+    el.querySelector('#psv').disabled=!dirty()||!cur.username.trim()};
+  el.addEventListener('input',e=>{if(e.target.id==='pnm')cur.username=e.target.value;if(e.target.id==='pbio')cur.bio=e.target.value;paint()});
+  el.addEventListener('click',e=>{const c=e.target.closest('[data-c]'),f=e.target.closest('[data-f]');if(c){cur.accent=c.dataset.c;paint()}if(f){cur.frame=f.dataset.f;paint()}if(e.target.closest('#pa'))el.querySelector('#paf').click()});
+  el.querySelector('#paf').onchange=e=>{af=e.target.files[0];if(af){aurl=URL.createObjectURL(af);paint()}};
+  el.querySelector('#psv').onclick=async e=>{const b=e.currentTarget;b.disabled=true;
+    const u={username:cur.username.trim(),bio:cur.bio.trim(),style:{accent:cur.accent,frame:cur.frame}};
+    if(af){const url=await putImage('avatars',af);if(url)u.avatar_url=url}
+    const r=await sb.from('profiles').update(u).eq('id',S.user.id);
+    if(r.error){b.disabled=false;return toast(r.error.code==='23505'||/unique/.test(r.error.message)?'Это имя уже занято':'Ошибка: '+r.error.message)}
+    ME={...ME,...u};setNavAvatar();el.close();toast('Профиль обновлён');profile()};
+  paint();
 }
 async function showStats(){
-  const s=await stats(S.user.id),nx=AWARDS.find(a=>s.ds<a[0]);
-  const tiles=[['Просмотры',s.profile_views||0],['Подписчики',s.fr],['Подписки',s.fg],['Треков',s.up],['Лайков',s.lk],['Дней',s.ds]];
-  sheet(`<h2>Статистика</h2><div class="sgrid">${tiles.map(t=>`<div class="tile"><b>${t[1]}</b><small>${t[0]}</small></div>`).join('')}</div>
-    <div class="sh3">Награды за дни в приложении</div><div class="awr">${AWARDS.map(a=>`<span class="chip ${s.ds>=a[0]?'':'off'}">★ ${a[1]}</span>`).join('')}</div>
-    ${nx?`<small>До «${nx[1]}»: ${nx[0]-s.ds} дн.</small><div class="bar"><i style="width:${Math.round(s.ds/nx[0]*100)}%"></i></div>`:'<small>Все награды получены</small>'}`);
+  const s=await stats(S.user.id);
+  const tiles=[['Просмотры',s.profile_views||0],['Подписчики',s.fr],['Подписки',s.fg],['Треков',s.up],['Лайков',s.lk],['Дней',s.ds],['Ачивок',s.ac]];
+  sheet(`<h2>Статистика</h2><div class="sgrid">${tiles.map(t=>`<div class="tile"><b>${t[1]}</b><small>${t[0]}</small></div>`).join('')}</div>`);
 }
-
 /* ---------- события ---------- */
 let lpT=null,lpFired=false,lpX=0,lpY=0;
 document.addEventListener('pointerdown',e=>{lpFired=false;clearTimeout(lpT);const it=e.target.closest('.tr[data-i]');if(!it||e.target.closest('[data-menu]'))return;lpX=e.clientX;lpY=e.clientY;
@@ -344,6 +457,11 @@ document.addEventListener('click',e=>{
   if(x=q('[data-go]'))return go(x.dataset.go);
   if(q('[data-soon]'))return soon();
   if(q('[data-bell]'))return openNotifs();
+  if(q('[data-ach]'))return openAch();
+  if(q('[data-bdg]'))return openBadges();
+  if(x=q('[data-sq]')){$('q').value=x.dataset.sq;return $('q').dispatchEvent(new Event('input'))}
+  if(x=q('[data-sx]')){setH(getH().filter(v=>v!==x.dataset.sx));return searchHome()}
+  if(q('[data-sclr]')){setH([]);return searchHome()}
   if(q('[data-set2]'))return openSettings();
   if(q('[data-orx]'))return toast('Скоро...');
   if(q('[data-plus]'))return addTrack();
@@ -366,10 +484,11 @@ document.addEventListener('click',e=>{
   const {data}=await sb.auth.getSession();S=data.session;
   if(S){
     const [pr,lks]=await Promise.all([sb.from('profiles').select('*').eq('id',S.user.id).single(),sb.from('likes').select('track_id').eq('user_id',S.user.id)]);
-    ME=pr.data;admin=!!(ME&&ME.is_admin);(lks.data||[]).forEach(x=>LIKED.add(x.track_id));initNotifs();
+    ME=pr.data;admin=!!(ME&&ME.is_admin);(lks.data||[]).forEach(x=>LIKED.add(x.track_id));await loadSettings();initNotifs();
     sb.from('activity_days').upsert({user_id:S.user.id,day:new Date().toISOString().slice(0,10)},{ignoreDuplicates:true}).then(()=>{},()=>{});
   }
-  lk.innerHTML=ic('heart');pp.innerHTML=ic('play','f');nx.innerHTML=ic('tri','f');setNavAvatar();
+  new ResizeObserver(()=>document.documentElement.style.setProperty('--dock-h',$('dock').offsetHeight+'px')).observe($('dock'));
+  lk.innerHTML=ic('heart');pp.innerHTML=ic('play','f');nx.innerHTML=ic('skip','f');setNavAvatar();
   go('home');
 })();
 </script>
