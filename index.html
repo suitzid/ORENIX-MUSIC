@@ -352,8 +352,9 @@ button.chip2{padding:8px 14px;font-size:14px}
 </div>
 <div id="toast"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
-/* Мини-клиент Supabase без CDN: auth (implicit/refresh), PostgREST, storage. Те же вызовы, что у supabase-js. */
+/* Запасной мини-клиент Supabase: используется ТОЛЬКО если supabase-js с CDN не загрузился: auth (implicit/refresh), PostgREST, storage. Те же вызовы, что у supabase-js. */
 (function(){
 const enc=encodeURIComponent,now=()=>Math.floor(Date.now()/1000);
 function createClient(url,key,opts){
@@ -446,7 +447,7 @@ function createClient(url,key,opts){
     channel:()=>chan,removeAllChannels:async()=>{}
   };
 }
-window.supabase={createClient:createClient};
+if(!(window.supabase&&window.supabase.createClient)){window.supabase={createClient:createClient};window.__miniSB=true}
 })();
 </script>
 <script>
@@ -463,7 +464,7 @@ const STORE={
     if(v==null){try{v=await idb.get(k)}catch(e){}if(v!=null){try{localStorage.setItem(k,v)}catch(e){}}}return v==null?null:v},
   async setItem(k,v){try{localStorage.setItem(k,v)}catch(e){}try{await idb.set(k,v)}catch(e){}},
   async removeItem(k){try{localStorage.removeItem(k)}catch(e){}try{await idb.del(k)}catch(e){}}};
-const sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{storage:STORE,lock:async(n,t,f)=>await f(),persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const sb=window.__miniSB?window.supabase.createClient(SB_URL,SB_KEY,{auth:{storage:STORE,persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}):window.supabase.createClient(SB_URL,SB_KEY);
 const $=id=>document.getElementById(id), MAX=7*1024*1024;
 const BLANK='data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
 const AWARDS=[[1,'Первый день'],[7,'Неделя'],[30,'Месяц'],[100,'100 дней'],[365,'Год']];
@@ -856,9 +857,4 @@ async function openNotifs(){
   const n=(data||[]).filter(x=>allowed().includes(x.type)),empty='<div class="empty" style="padding:24px 0;text-align:center">Пока нет уведомлений</div>';
   const el=openOv('Уведомления',`<div id="nl">${n.map(nrow).join('')||empty}</div>`,`<button class="ib" id="nclr" aria-label="Очистить">${ic('trash')}</button>`);
   el.querySelector('#nclr').onclick=async()=>{if(!n.length)return;await sb.from('notifications').delete().eq('user_id',S.user.id);el.querySelector('#nl').innerHTML=empty;n.length=0;UNREAD=0;paintBell();toast('Уведомления очищены')};
-  if(UNREAD>0){await sb.from('notifications').update({read_at:new Date().toISOString()}).eq('user_id',S.user.id).is('read_at',null);UNREAD=0;paintBell()}
-}
-function setNavAvatar(){const b=document.querySelector('[data-go=profile]');b.innerHTML=ME?ava(ME,30):ic('user');hydrate(b)}
-function addPlaylist(){
-  coverFile=null;PICK=new Set();
-  const d=sheet(`<h2>Новый плейлплейл
+  if(UNREAD>0){await sb.from('notifications').update({read_at:new Date().toISOString()}).eq('user_id',S
