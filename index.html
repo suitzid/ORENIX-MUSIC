@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0d1512">
-<title>Orenix Music v0.4.11</title>
+<title>Orenix Music v0.4.11-fix-1</title>
 <style>
-/* Orenix Music v0.4.11 — стили */
+/* Orenix Music v0.4.11-fix-1 — стили */
 :root{
   --bg-app:#0d1512; --bg-screen:#16211f; --bg-field:#1f2c29; --bg-card:#1f2c29; --border-hair:#263230;
   --text-primary:#f2f4ef; --text-secondary:#8b968f; --text-tertiary:#6d7873;
@@ -240,8 +240,8 @@ button.chip2{padding:8px 14px;font-size:14px}
 /* ===== v0.4.7 ===== */
 #gi span{display:none}
 /* док выше: в полноэкранном режиме не залезает на системную панель */
-#dock{bottom:calc(env(safe-area-inset-bottom,0px) + 46px)}
-#app,.ov{padding-bottom:calc(var(--dock-h,100px) + 66px + env(safe-area-inset-bottom,0px))}
+#dock{bottom:calc(env(safe-area-inset-bottom,0px) + 20px)}
+#app,.ov{padding-bottom:calc(var(--dock-h,100px) + 40px + env(safe-area-inset-bottom,0px))}
 /* треки: отступ от края экрана и при снапе */
 .tc{column-gap:16px;row-gap:14px;scroll-padding-left:16px;scroll-padding-right:16px}
 .hs{scroll-padding-left:16px;scroll-padding-right:16px}
@@ -290,7 +290,7 @@ button.chip2{padding:8px 14px;font-size:14px}
 .vinyl{animation:vspin 5s linear infinite;animation-play-state:paused}
 .vinyl.spin{animation-play-state:running}
 /* полноэкранный плеер */
-.fp{position:fixed;inset:0;z-index:65;display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top,0px) + 14px) 24px calc(env(safe-area-inset-bottom,0px) + 34px);background:var(--bg-screen);overflow:hidden;animation:fpIn .46s cubic-bezier(.2,.9,.3,1);touch-action:none}
+.fp{position:fixed;inset:0;z-index:65;display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top,0px) + 14px) 24px calc(env(safe-area-inset-bottom,0px) + 10px);background:var(--bg-screen);overflow:hidden;animation:fpIn .46s cubic-bezier(.2,.9,.3,1);touch-action:none}
 .fp.out{animation:fpOut .3s cubic-bezier(.4,0,1,1) forwards;pointer-events:none}
 @keyframes fpIn{from{transform:translateY(100%)}to{transform:none}}
 @keyframes fpOut{to{transform:translateY(100%)}}
@@ -300,7 +300,7 @@ button.chip2{padding:8px 14px;font-size:14px}
 .fp-top{display:flex;align-items:center;justify-content:space-between;height:46px;flex:none}
 .fp-top .ib svg{width:22px;height:22px}
 .fp-lbl{font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text-secondary)}
-.fp-art{flex:1;display:grid;place-items:center;min-height:0;padding:12px 0}
+.fp-art{flex:1;display:grid;place-items:center;min-height:0;padding:12px 0 28px}
 .fp-art .cov{width:min(100%,calc(100vh - 440px),340px);height:auto;aspect-ratio:1;border-radius:28px;box-shadow:0 24px 60px rgba(0,0,0,.5);transition:transform .55s cubic-bezier(.34,1.4,.5,1)}
 .fp:not(.playing) .fp-art .cov{transform:scale(.86)}
 .fp-art .cov.swap{animation:fpSwap .45s ease}
@@ -361,7 +361,7 @@ button.chip2{padding:8px 14px;font-size:14px}
   .pb2.on svg,#lk.on svg{animation:pop .4s ease}
   #app>.hd{animation:none}
   .skl{animation:shimmer 1.3s linear infinite}.skl:nth-child(2){animation-delay:.1s}.skl:nth-child(3){animation-delay:.2s}
-  .cov.in,.av.in,.bi.in,.bimg.in{animation:orxFade .45s ease}
+  .cov.fadein,.av.fadein,.bi.fadein,.bimg.fadein{animation:orxFade .45s ease}
   .mrow{animation:orxUp .38s cubic-bezier(.2,.8,.2,1) backwards}
   .mrow:nth-child(2){animation-delay:.04s}.mrow:nth-child(3){animation-delay:.08s}.mrow:nth-child(4){animation-delay:.12s}.mrow:nth-child(5){animation-delay:.16s}.mrow:nth-child(n+6){animation-delay:.2s}
   .tile{animation:tileIn .42s var(--ios-spring) backwards}
@@ -520,11 +520,11 @@ function createClient(url,key,opts){
 }
 window.supabase={createClient:createClient};
 })();
-</script>
-<script>
+  </script>
+  <script>
 /* SQL для бейджей-картинок (выполнить один раз в Supabase):
    alter table public.badges add column if not exists image_url text; */
-const VERSION='v0.4.11';
+const VERSION='v0.4.11-fix-1';
 const SB_URL='https://pehcelgdqtekkknpqvaa.supabase.co',SB_KEY='sb_publishable_0rAsicZ1ZzIC2qO6dJ-saQ_XBmlxVPc';
 const idb=(()=>{let p;const open=()=>p||(p=new Promise((res,rej)=>{const r=indexedDB.open('orx',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}));
   const tx=(m,f)=>open().then(db=>new Promise((res,rej)=>{const t=db.transaction('kv',m),q=f(t.objectStore('kv'));t.oncomplete=()=>res(q.result);t.onerror=()=>rej(t.error)}));
@@ -604,7 +604,7 @@ const IMG=new Map(),BADIMG=new Set();
 async function cached(img){
   const u=img.dataset.src;if(!u){img.src=BLANK;delete img.dataset.hy;return}
   if(img.dataset.hy===u)return;img.dataset.hy=u;
-  const put=v=>{if(img.dataset.src!==u)return;img.onload=()=>{img.classList.remove('in');void img.offsetWidth;img.classList.add('in')};img.src=v};
+  const put=v=>{if(img.dataset.src!==u)return;img.onload=()=>{img.classList.remove('fadein');void img.offsetWidth;img.classList.add('fadein')};img.src=v};
   if(IMG.has(u))return put(IMG.get(u));
   if(BADIMG.has(u))return put(u);
   try{const c=await caches.open('orx-covers');let r=await c.match(u);if(!r){await c.add(u);r=await c.match(u)}
