@@ -791,7 +791,6 @@ async function profile(){
 }
 const go=n=>{view=n;document.querySelectorAll('.nav-btn').forEach((b,i)=>{const a=b.dataset.go===n;b.classList.toggle('active',a);if(a)$('ni').style.setProperty('--i',i)});scrollTo(0,0);({home,lib,search,profile})[n]();$('app').dataset.ok=1};
 
-/* ---------- шторки и оверлеи ---------- */
 function plusMenu(){const d=sheet('<button class="btn" data-addtrack>Добавить трек</button><button class="btn" data-addpl>Создать плейлист</button>');d.onclick=()=>d.close()}
 function autofill(f){
   const m=f.name.replace(/\.[^.]+$/,'').split(/\s[-–—]\s/);
@@ -905,4 +904,293 @@ async function secCache(){
     `<div class="swr"><div><b>Лимит кэша</b></div><select class="in" id="cl" style="width:auto;margin:0">${[50,100,200,500].map(n=>`<option value="${n}"${SET.cache_mb===n?' selected':''}>${n} МБ</option>`).join('')}</select></div>
     <div class="swr"><div><b>Занято на устройстве</b><small style="display:block" id="cu">${mb.toFixed(1)} МБ</small></div></div><button class="btn dng" id="cc">Очистить кэш</button>`);
   bindSw(el);el.querySelector('#cl').onchange=async e=>{SET.cache_mb=+e.target.value;await saveSet()};
-  el.querySelector('#cc').onclick=async()=>{await caches.delete('orx-audio');await cach
+  el.querySelector('#cc').onclick=async()=>{await caches.delete('orx-audio');await caches.delete('orx-covers');localStorage.removeItem('orx_idx');el.querySelector('#cu').textContent='0.0 МБ';toast('Кэш очищен')};
+}
+function openSettings(){
+  if(!S)return signIn();
+  const r=(k,i,t)=>`<button class="mrow" data-sec="${k}"><span class="mi-ic">${ic(i)}</span><span>${t}</span>${ic('more')}</button>`;
+  const el=openOv('Настройки',r('acc','user','Аккаунт')+r('ntf','bell','Уведомления')+r('prv','badge','Конфиденциальность')+r('cch','dl','Хранилище и автокэш')+(admin?r('adm','award','Админ-панель'):'')+
+    `<div class="ft">orenix music by <a href="https://t.me/orenixpro" target="_blank" rel="noopener">@orenixpro</a> ${VERSION}</div>`);
+  el.addEventListener('click',e=>{const b=e.target.closest('[data-sec]');if(b)({acc:secAccount,ntf:secNotif,prv:secPriv,cch:secCache,adm:openAdmin})[b.dataset.sec]()});
+}
+async function openBadges(){
+  const [r,me]=await Promise.all([sb.from('user_badges').select('badges(*)').eq('user_id',S.user.id),sb.from('profiles').select('pinned_badge_id').eq('id',S.user.id).single()]);
+  const bl=(r.data||[]).map(x=>x.badges).filter(Boolean),pid=me.data&&me.data.pinned_badge_id;
+  const el=openOv('Бейджи',bl.map(b=>`<div class="row">${bimg(b)}<div class="t"><b>${esc(b.title)}</b><small>${esc(b.descr)}</small></div><button class="btn" style="width:auto;margin:0;padding:8px 14px" data-pin="${b.id}">${b.id===pid?'Открепить':'Закрепить'}</button></div>`).join('')||'<div class="empty" style="padding:24px 0;text-align:center">Бейджей пока нет</div>');
+  el.addEventListener('click',async e=>{const b=e.target.closest('[data-pin]');if(!b)return;const on=b.textContent==='Закрепить';
+    const x=await sb.from('profiles').update({pinned_badge_id:on?b.dataset.pin:null}).eq('id',S.user.id);if(x.error)return toast('Ошибка');
+    el.querySelectorAll('[data-pin]').forEach(o=>o.textContent='Закрепить');if(on)b.textContent='Открепить';toast(on?'Бейдж закреплён':'Бейдж откреплён');profile()});
+}
+async function openAch(){
+  const uid=S.user.id,[a,ua,s,pl]=await Promise.all([sb.from('achievements').select('*').eq('is_active',true).order('threshold'),sb.from('user_achievements').select('achievement_id').eq('user_id',uid),stats(uid),sb.from('tracks').select('plays').eq('uploader_id',uid)]);
+  const got=new Set((ua.data||[]).map(x=>x.achievement_id)),vals={days_active:s.ds,uploads:s.up,followers:s.fr,likes_given:s.lk,plays_total:(pl.data||[]).reduce((n,x)=>n+x.plays,0)};
+  openOv('Достижения',(a.data||[]).map(x=>{const v=Math.min(vals[x.metric]||0,x.threshold),ok=got.has(x.id);
+    return `<div class="row"><span class="bsym${ok?'':' off'}" style="--bc:#fbbf24">★</span><div class="t"><b>${esc(x.title)}</b><small>${esc(x.descr)}</small>${ok?'':`<div class="bar"><i style="width:${Math.round(v/x.threshold*100)}%"></i></div><small>${v} из ${x.threshold}</small>`}</div>${ok?'<span class="tag">Получено</span>':''}</div>`}).join('')||'<div class="empty" style="padding:24px 0;text-align:center">Достижений пока нет</div>');
+}
+const COLORS=['#4fd6b4','#4a7cf0','#a78bfa','#f472b6','#fbbf24','#e2716a'];
+function openAdmin(){
+  if(!admin)return;
+  const el=openOv('Админ-панель',`<button class="mrow" data-ad="b"><span class="mi-ic">${ic('badge')}</span><span>Бейджи</span>${ic('more')}</button><button class="mrow" data-ad="a"><span class="mi-ic">${ic('award')}</span><span>Ачивки</span>${ic('more')}</button>`);
+  el.addEventListener('click',e=>{const b=e.target.closest('[data-ad]');if(b)b.dataset.ad==='b'?adminBadges():adminAch()});
+}
+async function adminBadges(){
+  const {data}=await sb.from('badges').select('*').order('created_at');
+  const el=openOv('Бейджи (админ)',`<button class="btn pri" data-nb>Новый бейдж</button>`+(data||[]).map(b=>`<div class="row"><span data-bi="${b.id}" style="display:contents">${bimg(b)}</span><div class="t"><b>${esc(b.title)}</b><small>${esc(b.descr)}</small></div><button class="ib" data-gv="${b.id}" aria-label="Выдать">${ic('qadd')}</button><button class="ib" data-bd="${b.id}" style="color:var(--danger)">${ic('trash')}</button></div>`).join(''));
+  el.addEventListener('click',async e=>{
+    if(e.target.closest('[data-nb]'))return newBadge(el);
+    const bi=e.target.closest('[data-bi]');if(bi)return pickFile(f=>cropImage(f,async blob=>{toast('Загружаю...');const u=await putImage('covers',blob);if(!u)return toast('Не удалось загрузить');const r=await sb.from('badges').update({image_url:u}).eq('id',bi.dataset.bi);if(r.error)return toast('Ошибка: '+r.error.message);el.close();adminBadges();toast('Картинка обновлена')}));
+    const g=e.target.closest('[data-gv]');if(g)return giveBadge(g.dataset.gv);
+    const d=e.target.closest('[data-bd]');if(d&&confirm('Удалить бейдж?')){await sb.from('badges').delete().eq('id',d.dataset.bd);el.close();adminBadges()}});
+}
+function newBadge(el){
+  let col=COLORS[0],bfile=null;
+  const d=sheet(`<h2>Новый бейдж</h2><input class="in" id="bt" placeholder="Название"><input class="in" id="bd2" placeholder="Описание"><div class="cpick"><img id="bim" class="cov" src="${BLANK}" alt=""><button class="btn" id="bpk">Картинка</button></div><div class="pal">${COLORS.map(c=>`<button class="swt${c===col?' on':''}" data-c="${c}" style="--c:${c}"></button>`).join('')}</div><button class="btn pri" id="bsv">Создать</button>`);
+  d.addEventListener('click',e=>{const c=e.target.closest('[data-c]');if(c){col=c.dataset.c;d.querySelectorAll('[data-c]').forEach(b=>b.classList.toggle('on',b===c))}});
+  let bsrc=null;const crop=f=>{bsrc=f;cropImage(f,b=>{bfile=b;const pv=d.querySelector('#bim');pv.style.objectFit='contain';pv.src=URL.createObjectURL(b)})};
+  d.querySelector('#bpk').onclick=()=>pickFile(crop);d.querySelector('#bim').onclick=()=>bsrc&&crop(bsrc);
+  bsv.onclick=async()=>{const t=bt.value.trim();if(!t)return toast('Введите название');if(!bfile)return toast('Выберите картинку');bsv.disabled=true;
+    const iu=await putImage('covers',bfile);if(!iu){bsv.disabled=false;return toast('Не удалось загрузить картинку')}
+    const r=await sb.from('badges').insert({slug:'b'+Date.now().toString(36),title:t,descr:bd2.value.trim(),symbol:'★',color:col,image_url:iu});
+    if(r.error)bsv.disabled=false;
+    if(r.error)return toast('Ошибка: '+r.error.message);d.close();el.close();adminBadges();toast('Бейдж создан')};
+}
+function giveBadge(id){
+  const d=sheet(`<h2>Выдать или забрать</h2><input class="in" id="gu" placeholder="Имя пользователя"><button class="btn pri" id="gy">Выдать</button><button class="btn dng" id="gn">Забрать</button>`);
+  const act=async give=>{const r=await sb.rpc('admin_badge',{uname:gu.value,bid:id,give}),m={ok:give?'Бейдж выдан':'Бейдж забран',no_user:'Пользователь не найден',forbidden:'Нет прав'};
+    toast(r.error?'Ошибка':m[r.data]||'Ошибка');if(r.data==='ok')d.close()};
+  gy.onclick=()=>act(true);gn.onclick=()=>act(false);
+}
+async function adminAch(){
+  const [a,b]=await Promise.all([sb.from('achievements').select('*').order('threshold'),sb.from('badges').select('id,title')]);
+  const el=openOv('Ачивки (админ)',`<button class="btn pri" data-na>Новая ачивка</button>`+(a.data||[]).map(x=>`<div class="row"><span class="bsym" style="--bc:#fbbf24">★</span><div class="t"><b>${esc(x.title)}</b><small>${esc(x.metric)} ≥ ${x.threshold}</small></div><button class="ib" data-ad2="${x.id}" style="color:var(--danger)">${ic('trash')}</button></div>`).join(''));
+  el.addEventListener('click',async e=>{if(e.target.closest('[data-na]'))return newAch(el,b.data||[]);const d=e.target.closest('[data-ad2]');
+    if(d&&confirm('Удалить ачивку?')){await sb.from('achievements').delete().eq('id',d.dataset.ad2);el.close();adminAch()}});
+}
+function newAch(el,bl){
+  const M=[['days_active','Дней в приложении'],['uploads','Загружено треков'],['followers','Подписчиков'],['plays_total','Прослушиваний треков'],['likes_given','Поставлено лайков']];
+  const d=sheet(`<h2>Новая ачивка</h2><input class="in" id="at" placeholder="Название"><input class="in" id="ad3" placeholder="Описание"><select class="in" id="am">${M.map(m=>`<option value="${m[0]}">${m[1]}</option>`).join('')}</select><input class="in" id="ath" type="number" min="1" placeholder="Порог (число)"><select class="in" id="abg"><option value="">Без награды-бейджа</option>${bl.map(x=>`<option value="${x.id}">${esc(x.title)}</option>`).join('')}</select><button class="btn pri" id="asv">Создать</button>`);
+  asv.onclick=async()=>{const t=at.value.trim(),n=+ath.value;if(!t||!n)return toast('Название и порог обязательны');
+    const r=await sb.from('achievements').insert({code:'a'+Date.now().toString(36),title:t,descr:ad3.value.trim(),metric:am.value,threshold:n,days_required:0,reward_badge_id:abg.value||null});
+    if(r.error)return toast('Ошибка: '+r.error.message);d.close();el.close();adminAch();toast('Ачивка создана')};
+}
+(function(){const m=$('mp');let x0=0,y0=0,on=false;
+  m.addEventListener('pointerdown',e=>{x0=e.clientX;y0=e.clientY;on=true});
+  m.addEventListener('pointerup',e=>{if(!on)return;on=false;const dx=e.clientX-x0,dy=e.clientY-y0;
+    if(Math.abs(dx)>50&&Math.abs(dy)<40){const f=dx<0;m.classList.remove('mswl','mswr');void m.offsetWidth;m.classList.add(f?'mswl':'mswr');step(f?1:-1)}});
+  m.addEventListener('pointercancel',()=>{on=false})})();
+/* ---------- уведомления ---------- */
+const ago=t=>{const m=Math.floor((Date.now()-new Date(t))/60000);if(m<1)return 'только что';if(m<60)return m+' мин назад';const h=Math.floor(m/60);if(h<24)return h+' ч назад';const d=Math.floor(h/24);if(d<7)return d+' дн назад';return new Date(t).toLocaleDateString('ru-RU',{day:'numeric',month:'long'})};
+const bdg=()=>UNREAD>0?`<i class="bd">${UNREAD>9?'9+':UNREAD}</i>`:'';
+function paintBell(){document.querySelectorAll('[data-bell]').forEach(b=>{const o=b.querySelector('.bd');if(o)o.remove();b.insertAdjacentHTML('beforeend',bdg())})}
+const allowed=()=>['badge','achievement',...(SET.n_follow?['follow']:[]),...(SET.n_top?['top_track']:[])];
+async function countUnread(){const r=await sb.from('notifications').select('*',{count:'exact',head:true}).eq('user_id',S.user.id).is('read_at',null).in('type',allowed());UNREAD=r.count||0;paintBell()}
+async function initNotifs(){
+  await countUnread();
+  sb.channel('notif-'+S.user.id).on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications',filter:'user_id=eq.'+S.user.id},p=>{if(allowed().includes(p.new.type)){UNREAD++;paintBell();toast('Новое уведомление')}}).subscribe();
+}
+const nrow=x=>{const nw=x.read_at?'':' new';
+  if(x.type==='follow')return `<div class="row nr${nw}"${x.actor?` data-u="${x.actor.id}"`:''}>${ava(x.actor||{username:'?'},48)}<div class="t"><b>${esc(x.actor?x.actor.username:'Пользователь')}</b><small>подписался на вас · ${ago(x.created_at)}</small></div></div>`;
+  if(x.type==='top_track')return `<div class="row nr${nw}">${cov(x.track&&x.track.artwork_url)}<div class="t"><b>Ваш трек стал №1</b><small>«${esc(x.track?x.track.title:'')}» теперь самый прослушиваемый · ${ago(x.created_at)}</small></div></div>`;
+  return `<div class="row nr${nw}"><span class="bsym" style="--bc:${x.type==='badge'?'#4fd6b4':'#fbbf24'}">★</span><div class="t"><b>${x.type==='badge'?'Вам выдан бейдж':'Новая ачивка'}</b><small>«${esc(x.note||'')}» · ${ago(x.created_at)}</small></div></div>`};
+async function openNotifs(){
+  if(!S){toast('Войдите, чтобы видеть уведомления');return signIn()}
+  const {data}=await sb.from('notifications').select('*,actor:profiles!actor_id(id,username,avatar_url),track:tracks(id,title,artwork_url)').eq('user_id',S.user.id).order('created_at',{ascending:false}).limit(50);
+  const n=(data||[]).filter(x=>allowed().includes(x.type)),empty='<div class="empty" style="padding:24px 0;text-align:center">Пока нет уведомлений</div>';
+  const el=openOv('Уведомления',`<div id="nl">${n.map(nrow).join('')||empty}</div>`,`<button class="ib" id="nclr" aria-label="Очистить">${ic('trash')}</button>`);
+  el.querySelector('#nclr').onclick=async()=>{if(!n.length)return;await sb.from('notifications').delete().eq('user_id',S.user.id);el.querySelector('#nl').innerHTML=empty;n.length=0;UNREAD=0;paintBell();toast('Уведомления очищены')};
+  if(UNREAD>0){await sb.from('notifications').update({read_at:new Date().toISOString()}).eq('user_id',S.user.id).is('read_at',null);UNREAD=0;paintBell()}
+}
+function setNavAvatar(){const b=document.querySelector('[data-go=profile]');b.innerHTML=ME?ava(ME,30):ic('user');hydrate(b)}
+function addPlaylist(){
+  coverFile=null;PICK=new Set();
+  const d=sheet(`<h2>Новый плейлист</h2><div class="cpick"><img id="cp" class="cov" src="${BLANK}" alt=""><button class="btn" id="cb">Обложка</button></div><input type="file" id="cf" accept="image/*" hidden>
+    <input class="in" id="pn2" placeholder="Название"><select class="in" id="pr"><option value="1">Публичный</option><option value="0">Приватный</option></select>
+    <button class="btn" id="pk">Добавить трек</button><button class="btn pri" id="pc">Создать</button>`);
+  cb.onclick=()=>cf.click();cf.onchange=e=>{const f=e.target.files[0];cf.value='';if(f)cropImage(f,b=>{coverFile=b;cp.src=URL.createObjectURL(b)},true)};
+  pk.onclick=async()=>{const {data}=await TQ().order('created_at',{ascending:false}).limit(300),tr=data||[];
+    const ov=openOv('Выберите треки',tr.map((t,i)=>`<div class="row pick${PICK.has(t.id)?' sel':''}" data-pick="${i}">${cov(t.artwork_url)}<div class="t"><b>${esc(t.title)}</b><small>${esc(t.artist)}</small></div></div>`).join('')||'<div class="empty">В базе пока нет треков</div>');
+    ov.onclick=e=>{const r=e.target.closest('[data-pick]');if(!r)return;const id=tr[+r.dataset.pick].id;PICK.has(id)?PICK.delete(id):PICK.add(id);r.classList.toggle('sel')};
+    ov.onclose=()=>{pk.textContent='Добавить трек'+(PICK.size?' ('+PICK.size+')':'')}};
+  pc.onclick=async()=>{const ti=pn2.value.trim();if(!ti)return toast('Введите название');pc.disabled=true;
+    const cvr=coverFile?await putImage('covers',coverFile):null;
+    const {data,error}=await sb.from('playlists').insert({owner_id:S.user.id,title:ti,cover_url:cvr,is_public:pr.value==='1'}).select('id').single();
+    if(error){pc.disabled=false;return toast('Ошибка: '+error.message)}
+    if(PICK.size)await sb.from('playlist_tracks').insert([...PICK].map((t,i)=>({playlist_id:data.id,track_id:t,position:i})));
+    d.close();toast('Плейлист создан');go(view)};
+}
+const plural=n=>{const m=n%10,k=n%100;return m===1&&k!==11?'трек':(m>=2&&m<=4&&(k<12||k>14))?'трека':'треков'};
+async function openPlaylist(id){
+  const el=openOv('Плейлист','<div class="plc"><div class="empty">Загрузка...</div></div>','<span class="plr"></span>');
+  el.dataset.plov=id;
+  const load=async()=>{
+    const [p,t,lk,cn]=await Promise.all([sb.from('playlists').select('*').eq('id',id).single(),
+      sb.from('playlist_tracks').select('position,tracks(*)').eq('playlist_id',id).order('position'),
+      S?sb.from('playlist_likes').select('*').match({user_id:S.user.id,playlist_id:id}):{data:[]},
+      sb.from('playlist_likes').select('*',{count:'exact',head:true}).eq('playlist_id',id)]);
+    const pl=p.data;if(!pl){el.querySelector('.plc').innerHTML='<div class="empty">Плейлист не найден</div>';return}
+    const ow=await sb.from('profiles').select('username').eq('id',pl.owner_id).maybeSingle();
+    const tr=(t.data||[]).map(x=>x.tracks).filter(Boolean),mine=!!S&&S.user.id===pl.owner_id;
+    let on=(lk.data||[]).length>0,likes=cn.count||0;
+    el.dataset.plown=mine?'1':'0';el.querySelector('.ovh h2').textContent=pl.title;
+    const mins=Math.round(tr.reduce((a,x)=>a+(x.duration_ms||0),0)/60000);
+    el.querySelector('.plc').innerHTML=`<div class="plh">${cov(pl.cover_url,'cov plcv')}<div class="pli"><b>${esc(pl.title)}</b>${ow.data?`<small>${esc(ow.data.username)}</small>`:''}<small>${tr.length} ${plural(tr.length)}${mins?' · '+mins+' мин':''}${pl.is_public===false?' · приватный':''}</small></div></div>
+      <div class="plb"><button class="btn pri" id="plp">${ic('play','f')}Слушать</button><button class="btn" id="pls">Перемешать</button></div>${lst(tr,trow)||'<div class="empty">В плейлисте пока нет треков</div>'}`;
+    hydrate(el);
+    el.querySelector('#plp').onclick=()=>{if(!tr.length)return;queue=tr.slice();play(0)};
+    el.querySelector('#pls').onclick=()=>{if(!tr.length)return;queue=tr.slice().sort(()=>Math.random()-.5);play(0)};
+    const r=el.querySelector('.plr');
+    if(mine){r.innerHTML=`<button class="ib" aria-label="Меню">${ic('dots')}</button>`;r.firstChild.onclick=()=>plMenu(pl,el,tr)}
+    else{r.innerHTML=`<button class="ib plk" style="color:var(--accent)">${on?'♥':'♡'}</button>`;
+      r.firstChild.onclick=async e=>{if(!S)return signIn();const m={user_id:S.user.id,playlist_id:id};
+        on?await sb.from('playlist_likes').delete().match(m):await sb.from('playlist_likes').insert(m);on=!on;e.target.textContent=on?'♥':'♡'}}
+  };
+  el.refresh=load;await load();
+}
+function plMenu(pl,el,tr){
+  const d=sheet(`<h2>${esc(pl.title)}</h2><button class="mi" data-a="edit">${ic('edit')}Изменить</button><button class="mi" data-a="add">${ic('plus')}Добавить треки</button><button class="mi dng" data-a="del">${ic('trash')}Удалить плейлист</button>`,'glass');
+  d.onclick=e=>{const b=e.target.closest('[data-a]');if(!b)return;d.close();({edit:()=>plEdit(pl,el),add:()=>plAddTracks(pl,el,tr),del:()=>plDelete(pl,el)})[b.dataset.a]()};
+}
+function plEdit(pl,el){
+  let nf=null;
+  const d=sheet(`<h2>Изменить плейлист</h2><div class="cpick">${cov(pl.cover_url)}<button class="btn" data-plcv>Обложка</button></div>
+    <input class="in" data-plt maxlength="60" value="${esc(pl.title)}"><select class="in" data-plpr><option value="1"${pl.is_public!==false?' selected':''}>Публичный</option><option value="0"${pl.is_public===false?' selected':''}>Приватный</option></select>
+    <button class="btn pri" data-plsv>Сохранить</button>`);
+  hydrate(d);const im=d.querySelector('.cov');
+  d.querySelector('[data-plcv]').onclick=()=>pickFile(f=>cropImage(f,b=>{nf=b;im.src=URL.createObjectURL(b)},true));
+  d.querySelector('[data-plsv]').onclick=async()=>{const ti=d.querySelector('[data-plt]').value.trim();if(!ti)return toast('Введите название');
+    const u={title:ti,is_public:d.querySelector('[data-plpr]').value==='1'};
+    if(nf){const url=await putImage('covers',nf);if(!url)return toast('Не удалось загрузить обложку');u.cover_url=url}
+    const r=await sb.from('playlists').update(u).eq('id',pl.id);if(r.error)return toast('Ошибка: '+r.error.message);
+    d.close();toast('Сохранено');el.refresh()};
+}
+async function plAddTracks(pl,el,tr){
+  const have=new Set(tr.map(x=>x.id)),{data}=await TQ().order('created_at',{ascending:false}).limit(300),list=(data||[]).filter(x=>!have.has(x.id)),sel=new Set();
+  const ov=openOv('Добавить треки',list.map((t,i)=>`<div class="row pick" data-pick="${i}">${cov(t.artwork_url)}<div class="t"><b>${esc(t.title)}</b><small>${esc(t.artist)}</small></div></div>`).join('')||'<div class="empty">Новых треков нет</div>');
+  ov.onclick=e=>{const r=e.target.closest('[data-pick]');if(!r)return;const id=list[+r.dataset.pick].id;sel.has(id)?sel.delete(id):sel.add(id);r.classList.toggle('sel')};
+  ov.onclose=async()=>{if(!sel.size)return;
+    const mx=await sb.from('playlist_tracks').select('position').eq('playlist_id',pl.id).order('position',{ascending:false}).limit(1),p0=mx.data&&mx.data[0]?mx.data[0].position+1:0;
+    const x=await sb.from('playlist_tracks').insert([...sel].map((t,i)=>({playlist_id:pl.id,track_id:t,position:p0+i})));
+    toast(x.error?'Ошибка: '+x.error.message:'Добавлено: '+sel.size);el.refresh()};
+}
+function plDelete(pl,el){
+  const d=sheet(`<h2>Удалить плейлист?</h2><p style="color:var(--text-secondary);margin:0 0 12px">«${esc(pl.title)}» и его состав будут удалены.</p><button class="btn dng" data-plok>Удалить</button><button class="btn" data-plno>Отмена</button>`);
+  d.onclick=async e=>{if(e.target.closest('[data-plno]'))return d.close();if(!e.target.closest('[data-plok]'))return;
+    await sb.from('playlist_tracks').delete().eq('playlist_id',pl.id);await sb.from('playlist_likes').delete().eq('playlist_id',pl.id);
+    const r=await sb.from('playlists').delete().eq('id',pl.id);if(r.error)return toast('Ошибка: '+r.error.message);
+    d.close();el.close();toast('Плейлист удалён');go(view)};
+}
+async function plAction(pc,t,a){
+  if(!pc)return;const id=pc.dataset.plov;
+  const r=await sb.from('playlist_tracks').select('track_id,position').eq('playlist_id',id).order('position');
+  const ids=(r.data||[]).map(x=>x.track_id),i=ids.indexOf(t.id);if(i<0)return;
+  if(a==='rmpl'){ids.splice(i,1);const x=await sb.from('playlist_tracks').delete().match({playlist_id:id,track_id:t.id});if(x.error)return toast('Нет доступа: '+x.error.message);toast('Убрано из плейлиста')}
+  else{const j=a==='up'?i-1:i+1;if(j<0||j>=ids.length)return;[ids[i],ids[j]]=[ids[j],ids[i]]}
+  await Promise.all(ids.map((tid,k)=>sb.from('playlist_tracks').update({position:k}).match({playlist_id:id,track_id:tid})));
+  pc.refresh&&pc.refresh();
+}
+async function openUser(id){
+  if(typeof id!=='string')return;
+  const [s,t,f]=await Promise.all([stats(id),TQ().eq('uploader_id',id).order('created_at',{ascending:false}),S?sb.from('follows').select('*').match({follower_id:S.user.id,following_id:id}):{data:[]}]);
+  let on=(f.data||[]).length>0;const mine=S&&S.user.id===id;
+  const el=openOv(s.username,`<div class="pf">${ava(s,80)}<h1>${esc(s.username)}${s.is_admin?'<span class="vf">✓</span>':''}${medalOf(s)}</h1>${badgeChip(s)}<div class="cnt"><div><b>${s.fr}</b><small>подписчиков</small></div><div><b>${s.fg}</b><small>подписок</small></div></div>
+    ${mine?'':`<button class="btn pri" id="fw">${on?'Вы подписаны':'Подписаться'}</button>`}</div>${(!mine&&s.priv&&s.priv.hide_uploads)?'<div class="empty" style="padding:18px 0;text-align:center">Пользователь скрыл свои загрузки</div>':lst(t.data||[],trow)}`);
+  const b=el.querySelector('#fw');if(b)b.onclick=async()=>{if(!S)return signIn();const m={follower_id:S.user.id,following_id:id};
+    on?await sb.from('follows').delete().match(m):await sb.from('follows').insert(m);on=!on;b.textContent=on?'Вы подписаны':'Подписаться'};
+}
+async function editProfile(){
+  const s=await stats(S.user.id),st=s.style||{},PAL=['#4fd6b4','#4a7cf0','#a78bfa','#f472b6','#fbbf24'];
+  const bl=((await sb.from('user_badges').select('badges(*)').eq('user_id',S.user.id)).data||[]).map(x=>x.badges).filter(Boolean);
+  const base={username:s.username,bio:s.bio||'',accent:st.accent||PAL[0],frame:st.frame||'ring',bmode:st.bmode||'fade',badge:s.pinned_badge_id||null};let cur={...base},af=null,aurl=null;
+  const el=openOv('Изменить профиль',`<div id="pvw"></div><button class="mrow" id="pa"><span class="mi-ic">${ic('user')}</span><span>Сменить фото</span>${ic('more')}</button><input type="file" id="paf" accept="image/*" hidden>
+    <input class="in" id="pnm" maxlength="24" placeholder="Имя" value="${esc(base.username)}"><textarea class="in" id="pbio" maxlength="80" rows="2" placeholder="О себе">${esc(base.bio)}</textarea>
+    <div class="sh3">Цвет профиля</div><div class="pal">${PAL.map(c=>`<button class="swt" data-c="${c}" style="--c:${c}"></button>`).join('')}</div>
+    <div class="sh3">Рамка аватара</div><div class="seg"><button data-f="ring">Кольцо</button><button data-f="none">Без рамки</button></div>
+    <div class="sh3" style="margin-top:14px">Отображение бейджа</div><div class="seg"><button data-bm="fade">Плавно</button><button data-bm="tile">Плитка</button><button data-bm="off">Скрыть</button></div>`,'<button class="ib" id="psv" style="width:auto;padding:0 16px;font-weight:600;color:var(--accent)" disabled>Готово</button>');
+  const dirty=()=>cur.username!==base.username||cur.bio!==base.bio||cur.accent!==base.accent||cur.frame!==base.frame||cur.badge!==base.badge||cur.bmode!==base.bmode||!!af;
+  const paint=()=>{el.querySelector('#pvw').innerHTML=profCard({...s,username:cur.username||'Имя',bio:cur.bio,style:{accent:cur.accent,frame:cur.frame,bmode:cur.bmode},avatar_url:aurl||s.avatar_url,pb:bl.find(b=>b.id===cur.badge)||null},1);hydrate(el);
+    el.querySelectorAll('[data-c]').forEach(b=>b.classList.toggle('on',b.dataset.c===cur.accent));el.querySelectorAll('[data-f]').forEach(b=>b.classList.toggle('on',b.dataset.f===cur.frame));el.querySelectorAll('[data-bm]').forEach(b=>b.classList.toggle('on',b.dataset.bm===cur.bmode));
+    el.querySelector('#psv').disabled=!dirty()||!cur.username.trim()};
+  const pickBadge=()=>{const d=sheet(`<h2>Бейдж</h2>${bl.length?`<div class="bgrid">${bl.map(b=>`<button class="bpk${b.id===cur.badge?' on':''}" data-bid="${b.id}">${bimg(b)}<small>${esc(b.title)}</small></button>`).join('')}</div>`:'<div class="empty" style="padding:6px 0 12px">У вас пока нет бейджей</div>'}${cur.badge?'<button class="btn dng" data-bid="">Убрать бейдж</button>':''}`);
+    d.onclick=e=>{const b=e.target.closest('[data-bid]');if(!b)return;cur.badge=b.dataset.bid||null;d.close();paint()}};
+  el.addEventListener('input',e=>{if(e.target.id==='pnm')cur.username=e.target.value;if(e.target.id==='pbio')cur.bio=e.target.value;paint()});
+  el.addEventListener('click',e=>{const c=e.target.closest('[data-c]'),f=e.target.closest('[data-f]'),bm=e.target.closest('[data-bm]');if(bm){cur.bmode=bm.dataset.bm;paint()}if(c){cur.accent=c.dataset.c;paint()}if(f){cur.frame=f.dataset.f;paint()}if(e.target.closest('#pa'))el.querySelector('#paf').click();if(e.target.closest('[data-bpick]'))pickBadge()});
+  el.querySelector('#paf').onchange=e=>{af=e.target.files[0];if(af){aurl=URL.createObjectURL(af);paint()}};
+  el.querySelector('#psv').onclick=async e=>{const b=e.currentTarget;b.disabled=true;
+    const u={username:cur.username.trim(),bio:cur.bio.trim(),style:{accent:cur.accent,frame:cur.frame,bmode:cur.bmode},pinned_badge_id:cur.badge};
+    if(af){const url=await putImage('avatars',af);if(url)u.avatar_url=url}
+    const r=await sb.from('profiles').update(u).eq('id',S.user.id);
+    if(r.error){b.disabled=false;return toast(r.error.code==='23505'||/unique/.test(r.error.message)?'Это имя уже занято':'Ошибка: '+r.error.message)}
+    ME={...ME,...u};setNavAvatar();el.close();toast('Профиль обновлён');profile()};
+  paint();
+}
+async function showStats(){
+  const s=await stats(S.user.id);
+  const tiles=[['Просмотры',s.profile_views||0],['Подписчики',s.fr],['Подписки',s.fg],['Треков',s.up],['Лайков',s.lk],['Дней',s.ds],['Ачивок',s.ac]];
+  sheet(`<h2>Статистика</h2><div class="sgrid">${tiles.map(t=>`<div class="tile"><b>${t[1]}</b><small>${t[0]}</small></div>`).join('')}</div>`);
+}
+/* ---------- события ---------- */
+let lpT=null,lpFired=false,lpX=0,lpY=0;
+document.addEventListener('pointerdown',e=>{lpFired=false;clearTimeout(lpT);const it=e.target.closest('.tr[data-i]');if(!it||e.target.closest('[data-menu]'))return;lpX=e.clientX;lpY=e.clientY;
+  lpT=setTimeout(()=>{lpFired=true;if(navigator.vibrate)navigator.vibrate(12);openMenu(L[+it.dataset.l][+it.dataset.i],it)},480)});
+document.addEventListener('pointermove',e=>{if(Math.hypot(e.clientX-lpX,e.clientY-lpY)>10)clearTimeout(lpT)});
+['pointerup','pointercancel'].forEach(n=>document.addEventListener(n,()=>clearTimeout(lpT)));
+document.addEventListener('contextmenu',e=>{if(e.target.closest('.tr'))e.preventDefault()});
+document.addEventListener('click',e=>{
+  if(lpFired){lpFired=false;return}
+  const q=s=>e.target.closest(s);let x;
+  if(x=q('[data-go]'))return go(x.dataset.go);
+  if(q('[data-soon]'))return soon();
+  if(q('[data-bell]'))return openNotifs();
+  if(q('[data-ach]'))return openAch();
+  if(q('[data-bdg]'))return openBadges();
+  if(x=q('[data-sq]')){$('q').value=x.dataset.sq;return $('q').dispatchEvent(new Event('input'))}
+  if(x=q('[data-sx]')){setH(getH().filter(v=>v!==x.dataset.sx));return searchHome()}
+  if(q('[data-sclr]')){setH([]);return searchHome()}
+  if(q('[data-set2]'))return openSettings();
+  if(q('[data-orx]'))return toast('Скоро...');
+  if(q('[data-plus]'))return addTrack();
+  if(q('[data-addtrack]'))return addTrack();
+  if(q('[data-addpl]'))return addPlaylist();
+  if(q('[data-signin]'))return signIn();
+  if(q('[data-pe]'))return editProfile();
+  if(q('[data-st]'))return showStats();
+  if(q('[data-out]'))return sb.auth.signOut().then(()=>{S=null;admin=false;ME=null;LIKED.clear();UNREAD=0;sb.removeAllChannels();setNavAvatar();go('home')});
+  if(x=q('[data-more]'))return MORE[x.dataset.more]&&MORE[x.dataset.more]();
+  if(x=q('[data-back]'))return x.closest('.ov').close();
+  const it=q('[data-i]');
+  if(it){const t=L[+it.dataset.l][+it.dataset.i];
+    if(q('[data-menu]'))return openMenu(t,it);if(q('[data-like]'))return like(t);
+    queue=L[+it.dataset.l].slice();return play(+it.dataset.i)}
+  if(x=q('[data-p]'))return openPlaylist(x.dataset.p);
+  if(x=q('[data-u]'))return openUser(x.dataset.u);
+});
+window.addEventListener('error',e=>{try{toast('Ошибка: '+e.message)}catch(x){}});
+window.addEventListener('unhandledrejection',e=>{try{toast('Ошибка: '+((e.reason&&e.reason.message)||e.reason))}catch(x){}});
+async function loadUser(){
+  try{
+    if(!S)return;
+    const [pr,lks]=await Promise.all([sb.from('profiles').select('*').eq('id',S.user.id).single(),sb.from('likes').select('track_id').eq('user_id',S.user.id)]);
+    ME=pr.data;admin=!!(ME&&ME.is_admin);LIKED.clear();(lks.data||[]).forEach(x=>LIKED.add(x.track_id));
+    await loadSettings();
+    try{await sb.removeAllChannels()}catch(e){}
+    initNotifs();
+    sb.from('activity_days').upsert({user_id:S.user.id,day:new Date().toISOString().slice(0,10)},{ignoreDuplicates:true}).then(()=>{},()=>{});
+  }catch(e){console.error(e)}
+  setNavAvatar();paintHeart();go(view);
+}
+(async()=>{
+  new ResizeObserver(()=>document.documentElement.style.setProperty('--dock-h',$('dock').offsetHeight+'px')).observe($('dock'));
+  lk.innerHTML=ic('heart');pp.innerHTML=ic('play','f');nx.innerHTML=ic('skip','f');setNavAvatar();
+  go('home');
+  try{const r=await Promise.race([sb.auth.getSession(),new Promise(r=>setTimeout(()=>r({data:{session:null}}),8000))]);S=r.data.session}catch(e){console.error(e)}
+  if(S)await loadUser();
+  setInterval(async()=>{try{const r=await sb.auth.getSession();if(r.data.session)S=r.data.session;if(S)countUnread()}catch(e){}},60000);
+  sb.auth.onAuthStateChange((ev,sess)=>{
+    if(ev==='SIGNED_IN'&&sess&&(!S||S.user.id!==sess.user.id)){S=sess;setTimeout(loadUser,0)}
+    else if(ev==='TOKEN_REFRESHED'&&sess)S=sess;
+  });
+})();
+</script>
+<script>setTimeout(function(){var j=document.createElement('script');j.src='https://cdn.jsdelivr.net/npm/jsmediatags@3.9.7/dist/jsmediatags.min.js';j.async=true;j.onerror=function(){};document.head.appendChild(j)},2500)</script>
+</body>
+</html>
