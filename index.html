@@ -387,6 +387,13 @@ button.chip2{padding:8px 14px;font-size:14px}
 .sheet{padding-bottom:calc(var(--dock-h,100px) + 32px + env(safe-area-inset-bottom,0px))}
 .fp{padding-bottom:calc(var(--dock-h,64px) + 36px + env(safe-area-inset-bottom,0px))}
 body.fpo #mp{display:none}
+/* полный плеер: навбар прячется, шапка ниже статус-бара */
+#dock .nav{transition:transform .35s cubic-bezier(.2,.8,.2,1),opacity .25s}
+body.fpo #dock{pointer-events:none}
+body.fpo #dock .nav{transform:translateY(140%);opacity:0;pointer-events:none}
+.fp{padding-top:calc(env(safe-area-inset-top,0px) + var(--tl,0px) + 22px)!important;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 28px)!important}
+.fp-top{height:52px;margin-bottom:8px}
+.fp-info{margin-top:6px}
 /* баннер профиля */
 .pbn{position:relative;height:124px;margin:4px 16px 0;border-radius:26px;overflow:hidden;border:.5px solid var(--border-hair);
   background:linear-gradient(135deg,color-mix(in srgb,var(--pa,#4fd6b4) 55%,#16211f),color-mix(in srgb,var(--pa,#4fd6b4) 14%,#0d1512))}
@@ -529,8 +536,18 @@ function createClient(url,key,opts){
     try{const r=await fetch(url+'/storage/v1/'+path,{method:m,headers:{apikey:key,Authorization:'Bearer '+tok,...extra},body});const j=await r.json().catch(()=>({}));
       return r.ok?{data:j,error:null}:{data:null,error:{message:j.message||j.error||('HTTP '+r.status)}}}catch(e){return {data:null,error:{message:'нет соединения'}}}};
   const ep=p=>p.split('/').map(enc).join('/');
+  async function pwAuth(path,body){
+    try{const r=await fetch(url+path,{method:'POST',headers:{apikey:key,'Content-Type':'application/json'},body:JSON.stringify(body)});
+      const j=await r.json().catch(()=>({}));
+      if(!r.ok)return {data:null,error:{message:j.msg||j.error_description||j.message||('HTTP '+r.status),code:j.error_code||j.code}};
+      if(j.access_token){const n=norm(j);if(!n.user)n.user=jwtUser(n.access_token);await save(n);emit('SIGNED_IN',n);return {data:{session:n,user:n.user},error:null}}
+      return {data:{session:null,user:j.user||j},error:null}
+    }catch(e){return {data:null,error:{message:'нет соединения'}}}}
   return {
     auth:{getSession,
+      signInWithPassword:o=>pwAuth('/auth/v1/token?grant_type=password',{email:o.email,password:o.password}),
+      signUp:o=>pwAuth('/auth/v1/signup',{email:o.email,password:o.password}),
+      resetPasswordForEmail:async(email,o)=>{const r=await pwAuth('/auth/v1/recover',{email});return r.error?r:{data:{},error:null}},
       onAuthStateChange(cb){subs.push(cb);return {data:{subscription:{unsubscribe(){const i=subs.indexOf(cb);if(i>=0)subs.splice(i,1)}}}}},
       async signInWithOAuth(o){location.href=url+'/auth/v1/authorize?provider='+enc(o.provider)+'&redirect_to='+enc((o.options&&o.options.redirectTo)||location.href.split(/[?#]/)[0]);return {data:{},error:null}},
       async signOut(){const t=sess&&sess.access_token;await drop();emit('SIGNED_OUT',null);
@@ -548,9 +565,12 @@ window.supabase={createClient:createClient};
 })();
 </script>
 <script>
+/* SQL для баннера профиля (выполнить один раз в Supabase → SQL Editor, иначе «Could not find the 'banner_url' column»):
+   alter table public.profiles add column if not exists banner_url text;
+   notify pgrst, 'reload schema'; */
 /* SQL для бейджей-картинок (выполнить один раз в Supabase):
    alter table public.badges add column if not exists image_url text; */
-const VERSION='v0.4.12';
+const VERSION='v0.4.13';
 const SB_URL='https://pehcelgdqtekkknpqvaa.supabase.co',SB_KEY='sb_publishable_0rAsicZ1ZzIC2qO6dJ-saQ_XBmlxVPc';
 const idb=(()=>{let p;const open=()=>p||(p=new Promise((res,rej)=>{const r=indexedDB.open('orx',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}));
   const tx=(m,f)=>open().then(db=>new Promise((res,rej)=>{const t=db.transaction('kv',m),q=f(t.objectStore('kv'));t.oncomplete=()=>res(q.result);t.onerror=()=>rej(t.error)}));
@@ -683,8 +703,46 @@ function sheet(html,cls=''){const sh=document.createElement('div'),d=document.cr
   const close=()=>{if(d.closing)return;d.closing=1;sh.classList.add('out');d.classList.add('out');setTimeout(()=>{sh.remove();d.remove();d.onclose&&d.onclose()},200)};
   sh.onclick=close;d.close=close;document.body.append(sh,d);hydrate(d);return d}
 const openList=(t,tr,rank)=>openOv(t,lst(tr,(x,i,k)=>trk(x,i,k,rank))||'<div class="empty">Пока пусто</div>');
-const needLogin=()=>{app.innerHTML=hd()+'<div class="pad"><p class="empty" style="padding:0 0 12px">Войдите, чтобы пользоваться этим разделом.</p><button class="btn pri btn-ic" data-signin>'+G_IC+'Войти через Google</button><button class="btn btn-ic" data-orx>'+ORX_IC+'Войти через Orenix</button></div>'};
-const signIn=()=>sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.href.split(/[?#]/)[0]}});
+const needLogin=()=>{app.innerHTML=hd()+'<div class="pad"><p class="empty" style="padding:0 0 12px">Войдите, чтобы пользоваться этим разделом.</p><button class="btn pri btn-ic" data-signin>'+G_IC+'Войти через Google</button><button class="btn btn-ic" data-mail>'+MAIL_IC+'Войти по почте</button><button class="btn btn-ic" data-orx>'+ORX_IC+'Войти через Orenix</button></div>'};
+const MAIL_IC='<span class="gic" style="background:var(--accent-fill)"><svg viewBox="0 0 24 24" fill="none" stroke="#0d1512" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3.5 7l8.5 6 8.5-6"/></svg></span>';
+const signInGoogle=()=>sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.href.split(/[?#]/)[0]}});
+const signIn=()=>mailAuth();
+const authErr=m=>{m=String(m||'');
+  if(/invalid login/i.test(m))return 'Неверная почта или пароль';
+  if(/already registered|already been registered/i.test(m))return 'Эта почта уже зарегистрирована';
+  if(/at least|weak/i.test(m))return 'Пароль слишком короткий (минимум 6 символов)';
+  if(/not confirmed/i.test(m))return 'Подтвердите почту по ссылке из письма';
+  if(/valid email|invalid format|email address.*invalid/i.test(m))return 'Некорректная почта';
+  if(/rate limit|too many|seconds/i.test(m))return 'Слишком много попыток, подождите немного';
+  return m};
+function mailAuth(){
+  let mode='in',busy=false;
+  const d=sheet(`<h2 id="ah">Вход</h2><div class="seg" style="margin-bottom:6px"><button data-am="in" class="on">Вход</button><button data-am="up">Регистрация</button></div>
+    <input class="in" id="aem" type="email" inputmode="email" autocomplete="email" autocapitalize="off" placeholder="Почта">
+    <input class="in" id="apw" type="password" autocomplete="current-password" placeholder="Пароль">
+    <input class="in" id="apw2" type="password" autocomplete="new-password" placeholder="Повторите пароль" hidden>
+    <button class="btn pri" id="ago">Войти</button>
+    <button class="btn" id="afg" style="background:none;border:0;font-weight:500;color:var(--text-secondary);margin-top:0">Забыли пароль?</button>
+    <div class="sh3" style="text-align:center;margin:10px 0">или</div>
+    <button class="btn btn-ic" id="agg">${G_IC}Войти через Google</button>`);
+  const $a=i=>d.querySelector('#'+i);
+  const setMode=m=>{mode=m;d.querySelectorAll('[data-am]').forEach(b=>b.classList.toggle('on',b.dataset.am===m));
+    $a('ah').textContent=m==='in'?'Вход':'Регистрация';$a('ago').textContent=m==='in'?'Войти':'Создать аккаунт';
+    $a('apw2').hidden=m==='in';$a('afg').hidden=m!=='in';$a('apw').autocomplete=m==='in'?'current-password':'new-password'};
+  d.addEventListener('click',e=>{const b=e.target.closest('[data-am]');if(b)setMode(b.dataset.am)});
+  $a('agg').onclick=()=>signInGoogle();
+  $a('afg').onclick=async()=>{const em=$a('aem').value.trim();if(!em)return toast('Введите почту');
+    const r=await sb.auth.resetPasswordForEmail(em);toast(r.error?authErr(r.error.message):'Письмо для сброса пароля отправлено')};
+  $a('ago').onclick=async()=>{if(busy)return;const em=$a('aem').value.trim(),pw=$a('apw').value;
+    if(!/^\S+@\S+\.\S+$/.test(em))return toast('Введите корректную почту');
+    if(pw.length<6)return toast('Пароль — минимум 6 символов');
+    if(mode==='up'&&pw!==$a('apw2').value)return toast('Пароли не совпадают');
+    busy=true;const b=$a('ago');b.disabled=true;
+    const r=mode==='in'?await sb.auth.signInWithPassword({email:em,password:pw}):await sb.auth.signUp({email:em,password:pw});
+    busy=false;b.disabled=false;
+    if(r.error)return toast(authErr(r.error.message));
+    if(r.data&&r.data.session){d.close();toast(mode==='in'?'Вы вошли':'Аккаунт создан')}
+    else{d.close();toast('Подтвердите почту: мы отправили письмо со ссылкой')}}}
 
 /* ---------- плеер ---------- */
 const au=new Audio();au.preload='auto';
@@ -975,7 +1033,7 @@ function renameSheet(el){
     ME={...ME,username:v};const sn=el.querySelector('#sn');if(sn)sn.textContent=v;d.close();toast('Имя изменено')};
 }
 function secAccount(){
-  const el=openOv('Аккаунт',`<div class="swr"><div><b>Почта</b><small style="display:block">${esc(S.user.email||'—')}</small></div></div><div class="swr"><div><b>Способ входа</b><small style="display:block">Google</small></div></div>
+  const el=openOv('Аккаунт',`<div class="swr"><div><b>Почта</b><small style="display:block">${esc(S.user.email||'—')}</small></div></div><div class="swr"><div><b>Способ входа</b><small style="display:block">${S.user.app_metadata&&S.user.app_metadata.provider==='google'?'Google':'Почта и пароль'}</small></div></div>
     <button class="mrow" data-s="ava"><span class="mi-ic" id="sa">${ava(ME||{username:'?'},36)}</span><span>Аватар</span>${ic('more')}</button>
     <button class="mrow" data-s="name"><span class="mi-ic">${ic('user')}</span><span>Имя<small style="display:block" id="sn">${esc(ME&&ME.username||'')}</small></span>${ic('more')}</button>
     <button class="mrow" data-s="banner"><span class="mi-ic">${ic('edit')}</span><span>Баннер<small style="display:block">Меняется в «Изменить профиль»</small></span>${ic('more')}</button>
@@ -1215,7 +1273,9 @@ async function editProfile(){
     const u={username:cur.username.trim(),bio:cur.bio.trim(),style:{accent:cur.accent,frame:cur.frame,bmode:cur.bmode},pinned_badge_id:cur.badge};
     if(af){const url=await putImage('avatars',af);if(url)u.avatar_url=url;else toast('Фото не загрузилось')}
     if(bf){const bu=await putImage('covers',bf,1000);if(bu)u.banner_url=bu;else toast('Баннер не загрузился')}else if(brm)u.banner_url=null;
-    const r=await sb.from('profiles').update(u).eq('id',S.user.id);
+    let r=await sb.from('profiles').update(u).eq('id',S.user.id);
+    if(r.error&&/banner_url/.test(r.error.message)){const u2={...u};delete u2.banner_url;delete u.banner_url;r=await sb.from('profiles').update(u2).eq('id',S.user.id);
+      if(!r.error){toast('Баннер не сохранён: в базе нет колонки banner_url (см. SQL в коде)')}}
     if(r.error){b.disabled=false;return toast(r.error.code==='23505'||/unique/.test(r.error.message)?'Это имя уже занято':'Ошибка: '+r.error.message)}
     ME={...ME,...u};setNavAvatar();el.close();toast('Профиль обновлён');profile()};
   paint();
@@ -1248,7 +1308,8 @@ document.addEventListener('click',e=>{
   if(q('[data-plus]'))return addTrack();
   if(q('[data-addtrack]'))return addTrack();
   if(q('[data-addpl]'))return addPlaylist();
-  if(q('[data-signin]'))return signIn();
+  if(q('[data-signin]'))return signInGoogle();
+  if(q('[data-mail]'))return mailAuth();
   if(q('[data-pe]'))return editProfile();
   if(q('[data-st]'))return showStats();
   if(q('[data-out]'))return confirmOut();
