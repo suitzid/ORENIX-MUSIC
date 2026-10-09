@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0d1512">
-<title>Orenix Music v0.4.8</title>
+<title>Orenix Music v0.4.9</title>
 <style>
 /* Orenix Music v0.4.0 — стили (палитра и навбар из референса) */
 :root{
@@ -320,6 +320,79 @@ button.chip2{padding:8px 14px;font-size:14px}
 /* кадрирование картинки бейджа */
 .crf{position:relative;overflow:hidden;margin:0 auto;border-radius:18px;background:#000;border:.5px solid var(--glass-border);touch-action:none}
 .crf img{position:absolute;left:0;top:0;max-width:none;transform-origin:0 0;user-select:none;-webkit-user-drag:none;pointer-events:none}
+/* ===== v0.4.9 ===== */
+/* винил: пауза не сбрасывает угол */
+.vinyl{animation:vspin 5s linear infinite;animation-play-state:paused}
+.vinyl.spin{animation-play-state:running}
+/* полноэкранный плеер */
+.fp{position:fixed;inset:0;z-index:65;display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top,0px) + 14px) 24px calc(env(safe-area-inset-bottom,0px) + 34px);background:var(--bg-screen);overflow:hidden;animation:fpIn .46s cubic-bezier(.2,.9,.3,1);touch-action:none}
+.fp.out{animation:fpOut .3s cubic-bezier(.4,0,1,1) forwards;pointer-events:none}
+@keyframes fpIn{from{transform:translateY(100%)}to{transform:none}}
+@keyframes fpOut{to{transform:translateY(100%)}}
+.fp::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(15,22,20,.3),rgba(15,22,20,.88));z-index:0;pointer-events:none}
+.fp>*{position:relative;z-index:1}
+.fp>.fp-bg{position:absolute;inset:-60px;z-index:0;background-size:cover;background-position:center;filter:blur(55px) saturate(1.7);opacity:.6;transition:background-image .6s}
+.fp-top{display:flex;align-items:center;justify-content:space-between;height:46px;flex:none}
+.fp-top .ib svg{width:22px;height:22px}
+.fp-lbl{font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text-secondary)}
+.fp-art{flex:1;display:grid;place-items:center;min-height:0;padding:12px 0}
+.fp-art .cov{width:min(100%,calc(100vh - 440px),340px);height:auto;aspect-ratio:1;border-radius:28px;box-shadow:0 24px 60px rgba(0,0,0,.5);transition:transform .55s cubic-bezier(.34,1.4,.5,1)}
+.fp:not(.playing) .fp-art .cov{transform:scale(.86)}
+.fp-art .cov.swap{animation:fpSwap .45s ease}
+@keyframes fpSwap{from{opacity:0;transform:scale(.9)}to{opacity:1}}
+.fp-info{display:flex;align-items:center;gap:12px;flex:none}
+.fp-t{flex:1;min-width:0}
+.fp-t b{display:block;font-size:22px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fp-t small{display:block;font-size:16px;color:var(--text-secondary);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#flk{color:var(--accent);flex:none}#flk.on svg{fill:currentColor}#flk.on svg{animation:pop .4s ease}
+.fp-seek{margin-top:16px;padding:12px 0 2px;touch-action:none;cursor:pointer;flex:none}
+.fp-bar{position:relative;height:6px;border-radius:3px;background:rgba(255,255,255,.18)}
+.fp-bar i{position:absolute;left:0;top:0;bottom:0;width:var(--p,0%);border-radius:3px;background:var(--accent)}
+.fp-bar u{position:absolute;top:50%;left:var(--p,0%);width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.4);transition:transform .15s}
+.fp-seek.drag .fp-bar u{transform:scale(1.4)}
+.fp-times{display:flex;justify-content:space-between;font-size:12px;color:var(--text-secondary);margin-top:10px;font-variant-numeric:tabular-nums}
+.fp-ctl{display:flex;align-items:center;justify-content:center;gap:26px;margin-top:20px;flex:none}
+.fp-ctl .pb2{width:58px;height:58px}.fp-ctl .pb2.big{width:78px;height:78px}
+.fp-ctl .pb2 svg{width:26px;height:26px}.fp-ctl .big svg{width:32px;height:32px}
+.fp .pv svg{transform:scaleX(-1)}
+.flip{transform:rotate(180deg)}
+/* плейлисты */
+.plh{display:flex;gap:16px;align-items:center;margin:6px 0 14px}
+.plh .plcv{width:132px;height:132px;border-radius:24px;flex:none;box-shadow:0 14px 34px rgba(0,0,0,.35)}
+.pli{min-width:0;display:flex;flex-direction:column;gap:4px}
+.pli b{font-size:21px;line-height:1.2;word-break:break-word}.pli small{color:var(--text-secondary);font-size:13px}
+.plb{display:flex;gap:10px;margin-bottom:10px}
+.plb .btn{flex:1;margin:0;display:flex;align-items:center;justify-content:center;gap:8px}.plb svg{width:18px;height:18px}
+.plr{min-width:38px;display:flex;justify-content:flex-end}
+/* анимации */
+@keyframes orxUp{from{opacity:0;transform:translateY(14px)}}
+@keyframes orxFade{from{opacity:0}}
+@keyframes ovIn{from{opacity:0;transform:translateX(28px)}}
+@keyframes ovOut{to{opacity:0;transform:translateX(28px)}}
+@keyframes sheetUp{from{transform:translateY(100%)}}
+@keyframes sheetDn{to{transform:translateY(100%)}}
+@keyframes mpIn{from{opacity:0;transform:translateY(20px) scale(.95)}}
+@keyframes pop{40%{transform:scale(1.4)}}
+@media (prefers-reduced-motion:no-preference){
+  #app>*{animation:orxUp .4s cubic-bezier(.2,.8,.2,1) backwards}
+  #app>*:nth-child(2){animation-delay:.05s}#app>*:nth-child(3){animation-delay:.1s}#app>*:nth-child(4){animation-delay:.15s}#app>*:nth-child(n+5){animation-delay:.2s}
+  .ov .row,.ov .tr,.ov .plh,.ov .plb{animation:orxUp .38s cubic-bezier(.2,.8,.2,1) backwards}
+  .ov .row:nth-child(2),.ov .tr:nth-child(2){animation-delay:.03s}.ov .row:nth-child(3),.ov .tr:nth-child(3){animation-delay:.06s}.ov .row:nth-child(4),.ov .tr:nth-child(4){animation-delay:.09s}.ov .row:nth-child(5),.ov .tr:nth-child(5){animation-delay:.12s}.ov .row:nth-child(n+6),.ov .tr:nth-child(n+6){animation-delay:.15s}
+  .tc .tr{animation:orxUp .4s cubic-bezier(.2,.8,.2,1) backwards}
+  .tc .tr:nth-child(2){animation-delay:.04s}.tc .tr:nth-child(3){animation-delay:.08s}
+  .hs .card{animation:orxUp .4s cubic-bezier(.2,.8,.2,1) backwards}
+  .hs .card:nth-child(2){animation-delay:.05s}.hs .card:nth-child(3){animation-delay:.1s}.hs .card:nth-child(n+4){animation-delay:.15s}
+  .ov{animation:ovIn .34s cubic-bezier(.2,.9,.3,1)}.ov.out{animation:ovOut .19s ease forwards;pointer-events:none}
+  .shade{animation:orxFade .22s ease}.shade.out{animation:orxFade .2s ease reverse forwards;pointer-events:none}
+  .sheet{animation:sheetUp .36s cubic-bezier(.2,.9,.3,1)}.sheet.out{animation:sheetDn .2s ease-in forwards;pointer-events:none}
+  #mp:not([hidden]){animation:mpIn .5s var(--ios-spring)}
+  #mpc.swap{animation:orxFade .35s ease}
+  .pb2.on svg,#lk.on svg{animation:pop .4s ease}
+  .row,.tr,.card{transition:transform .16s ease,background .2s ease}
+  .row:active,.tr:active{transform:scale(.985)}.card:active{transform:scale(.96)}
+  .btn,.ib,.pb2{transition:transform .15s ease,background .2s ease}.btn:active,.ib:active{transform:scale(.96)}
+}
+@media (prefers-reduced-motion:reduce){.fp,.ov,.sheet,.shade{animation:none!important}}
 </style>
 </head>
 <body>
@@ -344,9 +417,20 @@ button.chip2{padding:8px 14px;font-size:14px}
 <script>
 /* SQL для бейджей-картинок (выполнить один раз в Supabase):
    alter table public.badges add column if not exists image_url text; */
-const VERSION='v0.4.8';
+const VERSION='v0.4.9';
 const SB_URL='https://pehcelgdqtekkknpqvaa.supabase.co',SB_KEY='sb_publishable_0rAsicZ1ZzIC2qO6dJ-saQ_XBmlxVPc';
-const sb=window.supabase.createClient(SB_URL,SB_KEY);
+const idb=(()=>{let p;const open=()=>p||(p=new Promise((res,rej)=>{const r=indexedDB.open('orx',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}));
+  const tx=(m,f)=>open().then(db=>new Promise((res,rej)=>{const t=db.transaction('kv',m),q=f(t.objectStore('kv'));t.oncomplete=()=>res(q.result);t.onerror=()=>rej(t.error)}));
+  return {get:k=>tx('readonly',s=>s.get(k)),set:(k,v)=>tx('readwrite',s=>s.put(v,k)),del:k=>tx('readwrite',s=>s.delete(k))}})();
+/* сессия хранится в двух местах: если браузер очистит одно, вход восстановится из другого */
+const STORE={
+  async getItem(k){let v=null;try{v=localStorage.getItem(k)}catch(e){}
+    if(v==null){try{v=await idb.get(k)}catch(e){}if(v!=null){try{localStorage.setItem(k,v)}catch(e){}}}return v==null?null:v},
+  async setItem(k,v){try{localStorage.setItem(k,v)}catch(e){}try{await idb.set(k,v)}catch(e){}},
+  async removeItem(k){try{localStorage.removeItem(k)}catch(e){}try{await idb.del(k)}catch(e){}}};
+try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
+const sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{storage:STORE,persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){try{sb.auth.startAutoRefresh();sb.auth.getSession()}catch(e){}}});
 const $=id=>document.getElementById(id), MAX=7*1024*1024;
 const BLANK='data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
 const AWARDS=[[1,'Первый день'],[7,'Неделя'],[30,'Месяц'],[100,'100 дней'],[365,'Год']];
@@ -375,14 +459,15 @@ const I={set:'<path d="M4 7h9M17 7h3M4 12h3M11 12h9M4 17h11M19 17h1"/><circle cx
   award:'<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>',badge:'<path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/>',more:'<path d="M9 5l7 7-7 7"/>',dir:'<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>'};
 const ic=(n,c='')=>`<svg class="icon ${c}" viewBox="0 0 24 24">${I[n]}</svg>`;
 I.link='<path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1 1M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1-1"/>';
+I.down='<path d="M6 9l6 6 6-6"/>';I.edit='<path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/>';
 const ORX_IC='<img class="oxi" alt="" src="data:image/png;base64,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">';
 const G_IC='<span class="gic"><svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg></span>';
-function cropImage(file,done){
+function cropImage(file,done,sq){
   const url=URL.createObjectURL(file),im=new Image();
   im.onerror=()=>toast('Не удалось открыть картинку');
   im.onload=()=>{
     const FW=Math.min(320,innerWidth-64);let FH,min,sc,x,y;
-    const d=sheet(`<h2>Область бейджа</h2><div class="seg" style="margin-bottom:12px"><button data-ar="1">Квадрат</button><button data-ar="2">Широкий</button></div><div class="crf"><img draggable="false" alt="" src="${url}"></div><small style="display:block;text-align:center;margin-top:8px">Двигай картинку пальцем, масштаб — ползунком</small><input type="range" class="crz" min="1" max="4" step="0.01" value="1" style="width:100%;margin:12px 0;accent-color:var(--accent)"><button class="btn pri crok">Готово</button>`);
+    const d=sheet(`<h2>Область бейджа</h2>${sq?'':'<div class="seg" style="margin-bottom:12px"><button data-ar="1">Квадрат</button><button data-ar="2">Широкий</button></div>'}<div class="crf"><img draggable="false" alt="" src="${url}"></div><small style="display:block;text-align:center;margin-top:8px">Двигай картинку пальцем, масштаб — ползунком</small><input type="range" class="crz" min="1" max="4" step="0.01" value="1" style="width:100%;margin:12px 0;accent-color:var(--accent)"><button class="btn pri crok">Готово</button>`);
     const frame=d.querySelector('.crf'),img=frame.querySelector('img'),z=d.querySelector('.crz');
     const draw=()=>{const w=im.width*sc,hh=im.height*sc;x=Math.min(0,Math.max(FW-w,x));y=Math.min(0,Math.max(FH-hh,y));img.style.width=w+'px';img.style.height=hh+'px';img.style.transform=`translate(${x}px,${y}px)`};
     const setAr=a=>{FH=Math.round(FW/a);frame.style.width=FW+'px';frame.style.height=FH+'px';min=Math.max(FW/im.width,FH/im.height);z.value=1;sc=min;x=(FW-im.width*sc)/2;y=(FH-im.height*sc)/2;draw();d.querySelectorAll('[data-ar]').forEach(b=>b.classList.toggle('on',+b.dataset.ar===a))};
@@ -416,38 +501,112 @@ const dur=ms=>ms?String(Math.floor(ms/60000)).padStart(2,'0')+':'+String(Math.fl
 const trk=(t,i,k,rank)=>`<div class="tr" data-l="${k}" data-i="${i}">${rank?`<span class="rk">${i<3?medalSvg(i+1):i+1}</span>`:''}${cov(t.artwork_url)}<div class="t"><b>${esc(t.title)}</b><small>${esc(t.artist)}</small></div><span class="du">${dur(t.duration_ms)}</span><button class="x" data-menu aria-label="Меню">${ic('dots')}</button></div>`;
 const trow=(t,i,k)=>trk(t,i,k,0);
 const colsTr=(l,rank)=>l.length?`<div class="tc">${lst(l,(t,i,k)=>trk(t,i,k,rank))}</div>`:'<div class="empty">Пока пусто</div>';
-const pcard=p=>`<div class="card" data-p="${p.id}">${cov(p.cover_url)}<b>${esc(p.title)}</b><small>плейлист</small></div>`;
-const prow=p=>`<div class="row" data-p="${p.id}">${cov(p.cover_url)}<div class="t"><b>${esc(p.title)}</b><small>плейлист</small></div></div>`;
+const pcard=p=>`<div class="card" data-p="${p.id}">${cov(p.cover_url)}<b>${esc(p.title)}</b><small>${p.is_public===false?'приватный':'плейлист'}</small></div>`;
+const prow=p=>`<div class="row" data-p="${p.id}">${cov(p.cover_url)}<div class="t"><b>${esc(p.title)}</b><small>${p.is_public===false?'приватный':'плейлист'}</small></div></div>`;
 const urow=u=>`<div class="row" data-u="${u.id}">${ava(u,48)}<div class="t"><b>${esc(u.username)}</b><small>${esc(u.bio||'')}</small></div></div>`;
 const car=(l,fn)=>l.length?`<div class="hs">${lst(l,fn)}</div>`:'<div class="empty">Пока пусто</div>';
 const sec=(t,body,more,extra)=>`<section class="sec"><div class="sh"><h2>${t}</h2><span class="shb">${extra||''}${more?`<button class="ib" data-more="${more}">${ic('more')}</button>`:''}</span></div>${body}</section>`;
 function openOv(title,html,right=''){const el=document.createElement('div');el.className='ov';
   el.innerHTML=`<div class="ovh"><button class="ib" data-back>${ic('back')}</button><h2>${esc(title)}</h2>${right||'<span style="width:38px"></span>'}</div>${html}`;
-  el.close=()=>{el.remove();el.onclose&&el.onclose()};document.body.appendChild(el);hydrate(el);return el}
+  el.close=()=>{if(el.closing)return;el.closing=1;el.classList.add('out');setTimeout(()=>{el.remove();el.onclose&&el.onclose()},190)};document.body.appendChild(el);hydrate(el);return el}
 function sheet(html,cls=''){const sh=document.createElement('div'),d=document.createElement('div');sh.className='shade';d.className='sheet '+cls;d.innerHTML=html;
-  const close=()=>{sh.remove();d.remove()};sh.onclick=close;d.close=close;document.body.append(sh,d);hydrate(d);return d}
+  const close=()=>{sh.classList.add('out');d.classList.add('out');setTimeout(()=>{sh.remove();d.remove()},200)};sh.onclick=close;d.close=close;document.body.append(sh,d);hydrate(d);return d}
 const openList=(t,tr,rank)=>openOv(t,lst(tr,(x,i,k)=>trk(x,i,k,rank))||'<div class="empty">Пока пусто</div>');
 const needLogin=()=>{app.innerHTML=hd()+'<div class="pad"><p class="empty" style="padding:0 0 12px">Войдите, чтобы пользоваться этим разделом.</p><button class="btn pri btn-ic" data-signin>'+G_IC+'Войти через Google</button><button class="btn btn-ic" data-orx>'+ORX_IC+'Войти через Orenix</button></div>'};
 const signIn=()=>sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin}});
 
 /* ---------- плеер ---------- */
-const au=new Audio();
-au.onended=()=>step(1);au.onerror=()=>step(1);
-au.onplay=()=>{pp.innerHTML=ic('pause','f');vn.classList.add('spin')};au.onpause=()=>{pp.innerHTML=ic('play','f');vn.classList.remove('spin')};
-au.ontimeupdate=()=>$('mp').style.setProperty('--pg',(au.currentTime/(au.duration||1)*100)+'%');
+const au=new Audio();au.preload='auto';
+let playTok=0,errRun=0,seeking=false,lastPos=0;
+const fmt=s=>{s=Math.max(0,Math.floor(s||0));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
+function setPlayUi(on){pp.innerHTML=ic(on?'pause':'play','f');vn.classList.toggle('spin',on);
+  const f=$('fpp');if(f)f.innerHTML=ic(on?'pause':'play','f');const fp=$('fp');if(fp)fp.classList.toggle('playing',on);
+  if('mediaSession' in navigator)try{navigator.mediaSession.playbackState=on?'playing':'paused'}catch(e){}}
+au.addEventListener('play',()=>setPlayUi(true));
+au.addEventListener('playing',()=>{errRun=0;setPlayUi(true)});
+au.addEventListener('pause',()=>setPlayUi(false));
+/* конец трека: играем следующий; на последнем треке очереди останавливаемся */
+au.addEventListener('ended',()=>{if(qi+1<queue.length)step(1);else{setPlayUi(false);try{au.currentTime=0}catch(e){}progress()}});
+au.addEventListener('error',()=>{if(!au.getAttribute('src'))return;
+  if(++errRun<=3&&qi+1<queue.length){toast('Не удалось воспроизвести, включаю следующий');step(1)}else{errRun=0;setPlayUi(false)}});
+au.addEventListener('timeupdate',()=>progress());au.addEventListener('loadedmetadata',()=>progress());
+function progress(){
+  const d=au.duration,c=au.currentTime,p=d&&isFinite(d)?c/d*100:0;
+  $('mp').style.setProperty('--pg',p+'%');
+  const fp=$('fp');if(fp&&!seeking){fp.style.setProperty('--p',p+'%');$('ftc').textContent=fmt(c);$('ftd').textContent=d&&isFinite(d)?fmt(d):'0:00'}
+  if('mediaSession' in navigator&&navigator.mediaSession.setPositionState&&d&&isFinite(d)&&Date.now()-lastPos>1000){lastPos=Date.now();
+    try{navigator.mediaSession.setPositionState({duration:d,position:Math.min(c,d),playbackRate:au.playbackRate||1})}catch(e){}}}
 pp.onclick=()=>au.paused?au.play():au.pause();nx.onclick=()=>step(1);lk.onclick=()=>queue[qi]&&like(queue[qi]);
-function step(d){const n=qi+d;if(n>=0&&n<queue.length)play(n)}
-function paintHeart(){lk.classList.toggle('on',!!(queue[qi]&&LIKED.has(queue[qi].id)))}
+function step(d){
+  if(d<0&&au.currentTime>3){au.currentTime=0;return}
+  const n=qi+d;if(n>=0&&n<queue.length)play(n)}
+function paintHeart(){const on=!!(queue[qi]&&LIKED.has(queue[qi].id));lk.classList.toggle('on',on);const f=$('flk');if(f)f.classList.toggle('on',on)}
+/* системное уведомление / экран блокировки / «остров» берут данные отсюда (Media Session) */
+function setMedia(t){
+  if(!('mediaSession' in navigator))return;const ms=navigator.mediaSession;
+  try{ms.metadata=new MediaMetadata({title:t.title,artist:t.artist,album:'Orenix Music',artwork:t.artwork_url?[{src:t.artwork_url,sizes:'512x512'}]:[]})}catch(e){}
+  const H=(a,f)=>{try{ms.setActionHandler(a,f)}catch(e){}};
+  H('play',()=>au.play());H('pause',()=>au.pause());H('nexttrack',()=>step(1));H('previoustrack',()=>step(-1));
+  H('seekto',e=>{if(e.seekTime!=null){au.currentTime=e.seekTime;progress()}});
+  H('seekbackward',e=>{au.currentTime=Math.max(0,au.currentTime-(e.seekOffset||10))});
+  H('seekforward',e=>{au.currentTime=Math.min(au.duration||1e9,au.currentTime+(e.seekOffset||10))});
+}
 async function play(i){
-  qi=i;const t=queue[i];if(!t||!t.stream_url)return step(1);
+  const my=++playTok;qi=i;const t=queue[i];
+  if(!t||!t.stream_url){if(i+1<queue.length)return play(i+1);return}
+  $('mp').hidden=false;np.textContent=t.title;na.textContent=t.artist;mpc.dataset.src=t.artwork_url||'';cached(mpc);
+  mpc.classList.remove('swap');void mpc.offsetWidth;mpc.classList.add('swap');paintHeart();syncPlayer();
   let src=t.stream_url;
   try{const c=await caches.open('orx-audio'),r=await c.match(src);if(r)src=URL.createObjectURL(await r.blob())}catch(e){}
-  au.src=src;try{await au.play()}catch(e){}autoCache(t.stream_url).catch(()=>{});
-  $('mp').hidden=false;np.textContent=t.title;na.textContent=t.artist;mpc.dataset.src=t.artwork_url||'';cached(mpc);paintHeart();
+  if(my!==playTok)return;
+  au.src=src;
+  try{await au.play()}catch(e){if(my===playTok&&!(e&&e.name==='AbortError'))setPlayUi(false)}
+  setMedia(t);autoCache(t.stream_url).catch(()=>{});
   sb.rpc('play_track',{tid:t.id}).then(()=>{},()=>{});
-  if('mediaSession' in navigator){navigator.mediaSession.metadata=new MediaMetadata({title:t.title,artist:t.artist});
-    navigator.mediaSession.setActionHandler('nexttrack',()=>step(1));navigator.mediaSession.setActionHandler('previoustrack',()=>step(-1))}
 }
+/* ---------- полноэкранный плеер ---------- */
+function syncPlayer(){
+  const fp=$('fp'),t=queue[qi];if(!fp||!t)return;
+  $('fnm').textContent=t.title;$('fan').textContent=t.artist;
+  const a=$('fart');if(a.dataset.src!==(t.artwork_url||'')){a.dataset.src=t.artwork_url||'';a.classList.remove('swap');void a.offsetWidth;a.classList.add('swap');cached(a)}
+  fp.classList.toggle('playing',!au.paused);fp.style.setProperty('--p','0%');$('ftc').textContent='0:00';$('ftd').textContent='0:00';paintHeart()}
+function closeFp(){const fp=$('fp');if(!fp||fp.classList.contains('out'))return;fp.classList.add('out');setTimeout(()=>fp.remove(),300)}
+function openPlayer(){
+  if(!queue[qi]||$('fp'))return;
+  const fp=document.createElement('div');fp.id='fp';fp.className='fp'+(au.paused?'':' playing');
+  fp.innerHTML=`<div class="fp-bg" id="fpbg"></div>
+    <div class="fp-top"><button class="ib" id="fcl" aria-label="Свернуть">${ic('down')}</button><span class="fp-lbl">Сейчас играет</span><button class="ib" id="fmo" aria-label="Меню">${ic('dots')}</button></div>
+    <div class="fp-art"><img id="fart" class="cov" alt="" src="${BLANK}"></div>
+    <div class="fp-info"><div class="fp-t"><b id="fnm"></b><small id="fan"></small></div><button class="pb2" id="flk" aria-label="Нравится">${ic('heart')}</button></div>
+    <div class="fp-seek" id="fsk"><div class="fp-bar"><i></i><u></u></div><div class="fp-times"><span id="ftc">0:00</span><span id="ftd">0:00</span></div></div>
+    <div class="fp-ctl"><button class="pb2 pv" id="fpv" aria-label="Назад">${ic('skip','f')}</button><button class="pb2 main big" id="fpp" aria-label="Играть">${ic(au.paused?'play':'pause','f')}</button><button class="pb2" id="fnx" aria-label="Дальше">${ic('skip','f')}</button></div>`;
+  document.body.appendChild(fp);
+  const art=$('fart');art.onload=()=>{if(art.src&&art.src!==BLANK)$('fpbg').style.backgroundImage=`url("${art.src}")`};
+  $('fcl').onclick=closeFp;
+  $('fmo').onclick=()=>queue[qi]&&openMenu(queue[qi],null);
+  $('flk').onclick=()=>queue[qi]&&like(queue[qi]);
+  $('fpp').onclick=()=>au.paused?au.play():au.pause();
+  $('fpv').onclick=()=>step(-1);$('fnx').onclick=()=>step(1);
+  /* полоса проигрывания: тянется пальцем */
+  const sk=$('fsk'),bar=sk.querySelector('.fp-bar');
+  const ratio=e=>{const r=bar.getBoundingClientRect();return Math.min(1,Math.max(0,(e.clientX-r.left)/r.width))};
+  const upd=e=>{const q=ratio(e);fp.style.setProperty('--p',q*100+'%');$('ftc').textContent=fmt(q*au.duration)};
+  sk.addEventListener('pointerdown',e=>{if(!au.duration||!isFinite(au.duration))return;seeking=true;sk.classList.add('drag');try{sk.setPointerCapture(e.pointerId)}catch(x){}upd(e)});
+  sk.addEventListener('pointermove',e=>{if(seeking)upd(e)});
+  sk.addEventListener('pointerup',e=>{if(!seeking)return;seeking=false;sk.classList.remove('drag');au.currentTime=ratio(e)*au.duration;progress()});
+  sk.addEventListener('pointercancel',()=>{seeking=false;sk.classList.remove('drag')});
+  /* свайп вниз закрывает */
+  let y0=null,dy=0;
+  fp.addEventListener('touchstart',e=>{if(e.target.closest('.fp-seek,button'))return;y0=e.touches[0].clientY;dy=0;fp.style.transition='none'},{passive:true});
+  fp.addEventListener('touchmove',e=>{if(y0==null)return;dy=Math.max(0,e.touches[0].clientY-y0);fp.style.transform=`translateY(${dy}px)`},{passive:true});
+  fp.addEventListener('touchend',()=>{if(y0==null)return;y0=null;if(dy>120)return closeFp();fp.style.transition='transform .3s cubic-bezier(.2,.9,.3,1)';fp.style.transform=''});
+  syncPlayer();progress();
+}
+/* тап по мини-плееру (не по кнопкам и не свайп) открывает полный плеер */
+(()=>{const m=$('mp');let sx=0,sy=0,moved=false;
+  m.addEventListener('pointerdown',e=>{sx=e.clientX;sy=e.clientY;moved=false});
+  m.addEventListener('pointermove',e=>{if(Math.abs(e.clientX-sx)>10||Math.abs(e.clientY-sy)>10)moved=true});
+  m.addEventListener('click',e=>{if(moved||e.target.closest('button'))return;openPlayer()})})();
 async function like(t){
   if(!S)return signIn();const m={user_id:S.user.id,track_id:t.id};
   if(LIKED.has(t.id)){await sb.from('likes').delete().match(m);LIKED.delete(t.id);toast('Убрано из понравившихся')}
@@ -554,7 +713,7 @@ function addTrack(){
   uf.onchange=e=>{const f=e.target.files[0];if(!f)return;
     if(f.size>MAX)return bad('Файл слишком большой: '+(f.size/1048576).toFixed(1)+' МБ. Максимум 7 МБ');
     er.textContent='';bf.style.width='0';st.textContent=f.name+' · '+(f.size/1048576).toFixed(1)+' МБ';ub.disabled=false;autofill(f)};
-  cf.onchange=e=>{coverFile=e.target.files[0];if(coverFile)cp.src=URL.createObjectURL(coverFile)};
+  cf.onchange=e=>{const f=e.target.files[0];cf.value='';if(f)cropImage(f,b=>{coverFile=b;cp.src=URL.createObjectURL(b)},true)};
   ub.onclick=async()=>{
     const f=uf.files[0],ti=ut.value.trim(),ar=ua.value.trim()||'—';
     if(!f)return;if(!ti)return toast('Введите название');if(f.size>MAX)return bad('Файл больше 7 МБ');
@@ -573,10 +732,11 @@ function addTrack(){
 }
 function playNow(t){queue=[t];play(0)}
 function openMenu(t,it){
+  const pc=it&&it.closest&&it.closest('[data-plov]'),pown=!!(pc&&pc.dataset.plown==='1');
   const d=sheet(`<div class="mhead">${cov(t.artwork_url)}<div class="t"><b>${esc(t.title)}</b><small>${esc(t.artist)}</small><small>Время: ${dur(t.duration_ms)||'—'}</small></div></div>
     <button class="mi" data-a="next">${ic('next')}Воспроизвести далее</button><button class="mi" data-a="queue">${ic('qadd')}Добавить в очередь</button>
     <button class="mi" data-a="pl">${ic('pladd')}Добавить в плейлист</button><button class="mi" data-a="dl">${ic('dl')}Скачать в кэш</button>
-    <button class="mi" data-a="share">${ic('share')}Поделиться</button>${admin?`<button class="mi dng" data-a="del">${ic('trash')}Удалить трек</button>`:''}`,'glass');
+    <button class="mi" data-a="share">${ic('share')}Поделиться</button>${pown?`<button class="mi" data-a="up">${ic('down','flip')}Выше в плейлисте</button><button class="mi" data-a="dn">${ic('down')}Ниже в плейлисте</button><button class="mi dng" data-a="rmpl">${ic('trash')}Убрать из плейлиста</button>`:''}${admin&&it?`<button class="mi dng" data-a="del">${ic('trash')}Удалить трек</button>`:''}`,'glass');
   d.onclick=async e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a;d.close();
     if(a==='next'){if(qi<0||!queue.length)playNow(t);else{queue.splice(qi+1,0,t);toast('Сыграет следующим')}}
     if(a==='queue'){if(qi<0||!queue.length)playNow(t);else{queue.push(t);toast('Добавлено в очередь')}}
@@ -584,6 +744,7 @@ function openMenu(t,it){
     if(a==='dl'){toast('Скачиваю...');try{await autoCache(t.stream_url,true);toast('Трек сохранён в кэш')}catch(x){toast('Не удалось скачать')}}
     if(a==='share'){if(navigator.share)navigator.share({title:t.title,text:t.title+' — '+t.artist,url:t.stream_url}).catch(()=>{});else{navigator.clipboard.writeText(t.stream_url);toast('Ссылка скопирована')}}
     if(a==='del')del(t,it);
+    if(a==='rmpl'||a==='up'||a==='dn')plAction(pc,t,a);
   };
 }
 async function pickPlaylist(t){
@@ -591,8 +752,8 @@ async function pickPlaylist(t){
   const {data}=await sb.from('playlists').select('id,title,cover_url').eq('owner_id',S.user.id);
   const d=sheet(`<h2>В плейлист</h2>${(data||[]).map(p=>`<div class="row" data-pid="${p.id}">${cov(p.cover_url)}<div class="t"><b>${esc(p.title)}</b></div></div>`).join('')||'<div class="empty" style="padding:0">Сначала создайте плейлист в Медиатеке</div>'}`);
   d.onclick=async e=>{const r=e.target.closest('[data-pid]');if(!r)return;
-    const {count}=await sb.from('playlist_tracks').select('*',{count:'exact',head:true}).eq('playlist_id',r.dataset.pid);
-    const x=await sb.from('playlist_tracks').insert({playlist_id:r.dataset.pid,track_id:t.id,position:count||0});
+    const mx=await sb.from('playlist_tracks').select('position').eq('playlist_id',r.dataset.pid).order('position',{ascending:false}).limit(1);
+    const x=await sb.from('playlist_tracks').insert({playlist_id:r.dataset.pid,track_id:t.id,position:mx.data&&mx.data[0]?mx.data[0].position+1:0});
     d.close();toast(x.error?(x.error.code==='23505'?'Уже в плейлисте':'Ошибка'):'Добавлено в плейлист')};
 }
 const saveSet=()=>sb.from('user_settings').upsert({user_id:S.user.id,data:SET});
@@ -704,151 +865,4 @@ async function adminAch(){
 }
 function newAch(el,bl){
   const M=[['days_active','Дней в приложении'],['uploads','Загружено треков'],['followers','Подписчиков'],['plays_total','Прослушиваний треков'],['likes_given','Поставлено лайков']];
-  const d=sheet(`<h2>Новая ачивка</h2><input class="in" id="at" placeholder="Название"><input class="in" id="ad3" placeholder="Описание"><select class="in" id="am">${M.map(m=>`<option value="${m[0]}">${m[1]}</option>`).join('')}</select><input class="in" id="ath" type="number" min="1" placeholder="Порог (число)"><select class="in" id="abg"><option value="">Без награды-бейджа</option>${bl.map(x=>`<option value="${x.id}">${esc(x.title)}</option>`).join('')}</select><button class="btn pri" id="asv">Создать</button>`);
-  asv.onclick=async()=>{const t=at.value.trim(),n=+ath.value;if(!t||!n)return toast('Название и порог обязательны');
-    const r=await sb.from('achievements').insert({code:'a'+Date.now().toString(36),title:t,descr:ad3.value.trim(),metric:am.value,threshold:n,days_required:0,reward_badge_id:abg.value||null});
-    if(r.error)return toast('Ошибка: '+r.error.message);d.close();el.close();adminAch();toast('Ачивка создана')};
-}
-(function(){const m=$('mp');let x0=0,y0=0,on=false;
-  m.addEventListener('pointerdown',e=>{x0=e.clientX;y0=e.clientY;on=true});
-  m.addEventListener('pointerup',e=>{if(!on)return;on=false;const dx=e.clientX-x0,dy=e.clientY-y0;
-    if(Math.abs(dx)>50&&Math.abs(dy)<40){const f=dx<0;m.classList.remove('mswl','mswr');void m.offsetWidth;m.classList.add(f?'mswl':'mswr');step(f?1:-1)}});
-  m.addEventListener('pointercancel',()=>{on=false})})();
-/* ---------- уведомления ---------- */
-const ago=t=>{const m=Math.floor((Date.now()-new Date(t))/60000);if(m<1)return 'только что';if(m<60)return m+' мин назад';const h=Math.floor(m/60);if(h<24)return h+' ч назад';const d=Math.floor(h/24);if(d<7)return d+' дн назад';return new Date(t).toLocaleDateString('ru-RU',{day:'numeric',month:'long'})};
-const bdg=()=>UNREAD>0?`<i class="bd">${UNREAD>9?'9+':UNREAD}</i>`:'';
-function paintBell(){document.querySelectorAll('[data-bell]').forEach(b=>{const o=b.querySelector('.bd');if(o)o.remove();b.insertAdjacentHTML('beforeend',bdg())})}
-const allowed=()=>['badge','achievement',...(SET.n_follow?['follow']:[]),...(SET.n_top?['top_track']:[])];
-async function countUnread(){const r=await sb.from('notifications').select('*',{count:'exact',head:true}).eq('user_id',S.user.id).is('read_at',null).in('type',allowed());UNREAD=r.count||0;paintBell()}
-async function initNotifs(){
-  await countUnread();
-  sb.channel('notif-'+S.user.id).on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications',filter:'user_id=eq.'+S.user.id},p=>{if(allowed().includes(p.new.type)){UNREAD++;paintBell();toast('Новое уведомление')}}).subscribe();
-}
-const nrow=x=>{const nw=x.read_at?'':' new';
-  if(x.type==='follow')return `<div class="row nr${nw}"${x.actor?` data-u="${x.actor.id}"`:''}>${ava(x.actor||{username:'?'},48)}<div class="t"><b>${esc(x.actor?x.actor.username:'Пользователь')}</b><small>подписался на вас · ${ago(x.created_at)}</small></div></div>`;
-  if(x.type==='top_track')return `<div class="row nr${nw}">${cov(x.track&&x.track.artwork_url)}<div class="t"><b>Ваш трек стал №1</b><small>«${esc(x.track?x.track.title:'')}» теперь самый прослушиваемый · ${ago(x.created_at)}</small></div></div>`;
-  return `<div class="row nr${nw}"><span class="bsym" style="--bc:${x.type==='badge'?'#4fd6b4':'#fbbf24'}">★</span><div class="t"><b>${x.type==='badge'?'Вам выдан бейдж':'Новая ачивка'}</b><small>«${esc(x.note||'')}» · ${ago(x.created_at)}</small></div></div>`};
-async function openNotifs(){
-  if(!S){toast('Войдите, чтобы видеть уведомления');return signIn()}
-  const {data}=await sb.from('notifications').select('*,actor:profiles!actor_id(id,username,avatar_url),track:tracks(id,title,artwork_url)').eq('user_id',S.user.id).order('created_at',{ascending:false}).limit(50);
-  const n=(data||[]).filter(x=>allowed().includes(x.type)),empty='<div class="empty" style="padding:24px 0;text-align:center">Пока нет уведомлений</div>';
-  const el=openOv('Уведомления',`<div id="nl">${n.map(nrow).join('')||empty}</div>`,`<button class="ib" id="nclr" aria-label="Очистить">${ic('trash')}</button>`);
-  el.querySelector('#nclr').onclick=async()=>{if(!n.length)return;await sb.from('notifications').delete().eq('user_id',S.user.id);el.querySelector('#nl').innerHTML=empty;n.length=0;UNREAD=0;paintBell();toast('Уведомления очищены')};
-  if(UNREAD>0){await sb.from('notifications').update({read_at:new Date().toISOString()}).eq('user_id',S.user.id).is('read_at',null);UNREAD=0;paintBell()}
-}
-function setNavAvatar(){const b=document.querySelector('[data-go=profile]');b.innerHTML=ME?ava(ME,30):ic('user');hydrate(b)}
-function addPlaylist(){
-  coverFile=null;PICK=new Set();
-  const d=sheet(`<h2>Новый плейлист</h2><div class="cpick"><img id="cp" class="cov" src="${BLANK}" alt=""><button class="btn" id="cb">Обложка</button></div><input type="file" id="cf" accept="image/*" hidden>
-    <input class="in" id="pn2" placeholder="Название"><select class="in" id="pr"><option value="1">Публичный</option><option value="0">Приватный</option></select>
-    <button class="btn" id="pk">Добавить трек</button><button class="btn pri" id="pc">Создать</button>`);
-  cb.onclick=()=>cf.click();cf.onchange=e=>{coverFile=e.target.files[0];if(coverFile)cp.src=URL.createObjectURL(coverFile)};
-  pk.onclick=async()=>{const {data}=await TQ().order('created_at',{ascending:false}).limit(300),tr=data||[];
-    const ov=openOv('Выберите треки',tr.map((t,i)=>`<div class="row pick${PICK.has(t.id)?' sel':''}" data-pick="${i}">${cov(t.artwork_url)}<div class="t"><b>${esc(t.title)}</b><small>${esc(t.artist)}</small></div></div>`).join('')||'<div class="empty">В базе пока нет треков</div>');
-    ov.onclick=e=>{const r=e.target.closest('[data-pick]');if(!r)return;const id=tr[+r.dataset.pick].id;PICK.has(id)?PICK.delete(id):PICK.add(id);r.classList.toggle('sel')};
-    ov.onclose=()=>{pk.textContent='Добавить трек'+(PICK.size?' ('+PICK.size+')':'')}};
-  pc.onclick=async()=>{const ti=pn2.value.trim();if(!ti)return toast('Введите название');pc.disabled=true;
-    const cvr=coverFile?await putImage('covers',coverFile):null;
-    const {data,error}=await sb.from('playlists').insert({owner_id:S.user.id,title:ti,cover_url:cvr,is_public:pr.value==='1'}).select('id').single();
-    if(error){pc.disabled=false;return toast('Ошибка: '+error.message)}
-    if(PICK.size)await sb.from('playlist_tracks').insert([...PICK].map((t,i)=>({playlist_id:data.id,track_id:t,position:i})));
-    d.close();toast('Плейлист создан');go(view)};
-}
-async function openPlaylist(id){
-  const [p,t,lk]=await Promise.all([sb.from('playlists').select('*').eq('id',id).single(),sb.from('playlist_tracks').select('position,tracks(*)').eq('playlist_id',id).order('position'),
-    S?sb.from('playlist_likes').select('*').match({user_id:S.user.id,playlist_id:id}):{data:[]}]);
-  const tr=(t.data||[]).map(x=>x.tracks).filter(Boolean);let on=(lk.data||[]).length>0;
-  const el=openOv(p.data?p.data.title:'Плейлист',lst(tr,trow)||'<div class="empty">В плейлисте пока нет треков</div>',`<button class="ib" id="plk" style="color:var(--accent)">${on?'♥':'♡'}</button>`);
-  el.querySelector('#plk').onclick=async e=>{if(!S)return signIn();const m={user_id:S.user.id,playlist_id:id};
-    on?await sb.from('playlist_likes').delete().match(m):await sb.from('playlist_likes').insert(m);on=!on;e.target.textContent=on?'♥':'♡'};
-}
-async function openUser(id){
-  if(typeof id!=='string')return;
-  const [s,t,f]=await Promise.all([stats(id),TQ().eq('uploader_id',id).order('created_at',{ascending:false}),S?sb.from('follows').select('*').match({follower_id:S.user.id,following_id:id}):{data:[]}]);
-  let on=(f.data||[]).length>0;const mine=S&&S.user.id===id;
-  const el=openOv(s.username,`<div class="pf">${ava(s,80)}<h1>${esc(s.username)}${s.is_admin?'<span class="vf">✓</span>':''}${medalOf(s)}</h1>${badgeChip(s)}<div class="cnt"><div><b>${s.fr}</b><small>подписчиков</small></div><div><b>${s.fg}</b><small>подписок</small></div></div>
-    ${mine?'':`<button class="btn pri" id="fw">${on?'Вы подписаны':'Подписаться'}</button>`}</div>${(!mine&&s.priv&&s.priv.hide_uploads)?'<div class="empty" style="padding:18px 0;text-align:center">Пользователь скрыл свои загрузки</div>':lst(t.data||[],trow)}`);
-  const b=el.querySelector('#fw');if(b)b.onclick=async()=>{if(!S)return signIn();const m={follower_id:S.user.id,following_id:id};
-    on?await sb.from('follows').delete().match(m):await sb.from('follows').insert(m);on=!on;b.textContent=on?'Вы подписаны':'Подписаться'};
-}
-async function editProfile(){
-  const s=await stats(S.user.id),st=s.style||{},PAL=['#4fd6b4','#4a7cf0','#a78bfa','#f472b6','#fbbf24'];
-  const bl=((await sb.from('user_badges').select('badges(*)').eq('user_id',S.user.id)).data||[]).map(x=>x.badges).filter(Boolean);
-  const base={username:s.username,bio:s.bio||'',accent:st.accent||PAL[0],frame:st.frame||'ring',bmode:st.bmode||'fade',badge:s.pinned_badge_id||null};let cur={...base},af=null,aurl=null;
-  const el=openOv('Изменить профиль',`<div id="pvw"></div><button class="mrow" id="pa"><span class="mi-ic">${ic('user')}</span><span>Сменить фото</span>${ic('more')}</button><input type="file" id="paf" accept="image/*" hidden>
-    <input class="in" id="pnm" maxlength="24" placeholder="Имя" value="${esc(base.username)}"><textarea class="in" id="pbio" maxlength="80" rows="2" placeholder="О себе">${esc(base.bio)}</textarea>
-    <div class="sh3">Цвет профиля</div><div class="pal">${PAL.map(c=>`<button class="swt" data-c="${c}" style="--c:${c}"></button>`).join('')}</div>
-    <div class="sh3">Рамка аватара</div><div class="seg"><button data-f="ring">Кольцо</button><button data-f="none">Без рамки</button></div>
-    <div class="sh3" style="margin-top:14px">Отображение бейджа</div><div class="seg"><button data-bm="fade">Плавно</button><button data-bm="tile">Плитка</button><button data-bm="off">Скрыть</button></div>`,'<button class="ib" id="psv" style="width:auto;padding:0 16px;font-weight:600;color:var(--accent)" disabled>Готово</button>');
-  const dirty=()=>cur.username!==base.username||cur.bio!==base.bio||cur.accent!==base.accent||cur.frame!==base.frame||cur.badge!==base.badge||cur.bmode!==base.bmode||!!af;
-  const paint=()=>{el.querySelector('#pvw').innerHTML=profCard({...s,username:cur.username||'Имя',bio:cur.bio,style:{accent:cur.accent,frame:cur.frame,bmode:cur.bmode},avatar_url:aurl||s.avatar_url,pb:bl.find(b=>b.id===cur.badge)||null},1);hydrate(el);
-    el.querySelectorAll('[data-c]').forEach(b=>b.classList.toggle('on',b.dataset.c===cur.accent));el.querySelectorAll('[data-f]').forEach(b=>b.classList.toggle('on',b.dataset.f===cur.frame));el.querySelectorAll('[data-bm]').forEach(b=>b.classList.toggle('on',b.dataset.bm===cur.bmode));
-    el.querySelector('#psv').disabled=!dirty()||!cur.username.trim()};
-  const pickBadge=()=>{const d=sheet(`<h2>Бейдж</h2>${bl.length?`<div class="bgrid">${bl.map(b=>`<button class="bpk${b.id===cur.badge?' on':''}" data-bid="${b.id}">${bimg(b)}<small>${esc(b.title)}</small></button>`).join('')}</div>`:'<div class="empty" style="padding:6px 0 12px">У вас пока нет бейджей</div>'}${cur.badge?'<button class="btn dng" data-bid="">Убрать бейдж</button>':''}`);
-    d.onclick=e=>{const b=e.target.closest('[data-bid]');if(!b)return;cur.badge=b.dataset.bid||null;d.close();paint()}};
-  el.addEventListener('input',e=>{if(e.target.id==='pnm')cur.username=e.target.value;if(e.target.id==='pbio')cur.bio=e.target.value;paint()});
-  el.addEventListener('click',e=>{const c=e.target.closest('[data-c]'),f=e.target.closest('[data-f]'),bm=e.target.closest('[data-bm]');if(bm){cur.bmode=bm.dataset.bm;paint()}if(c){cur.accent=c.dataset.c;paint()}if(f){cur.frame=f.dataset.f;paint()}if(e.target.closest('#pa'))el.querySelector('#paf').click();if(e.target.closest('[data-bpick]'))pickBadge()});
-  el.querySelector('#paf').onchange=e=>{af=e.target.files[0];if(af){aurl=URL.createObjectURL(af);paint()}};
-  el.querySelector('#psv').onclick=async e=>{const b=e.currentTarget;b.disabled=true;
-    const u={username:cur.username.trim(),bio:cur.bio.trim(),style:{accent:cur.accent,frame:cur.frame,bmode:cur.bmode},pinned_badge_id:cur.badge};
-    if(af){const url=await putImage('avatars',af);if(url)u.avatar_url=url}
-    const r=await sb.from('profiles').update(u).eq('id',S.user.id);
-    if(r.error){b.disabled=false;return toast(r.error.code==='23505'||/unique/.test(r.error.message)?'Это имя уже занято':'Ошибка: '+r.error.message)}
-    ME={...ME,...u};setNavAvatar();el.close();toast('Профиль обновлён');profile()};
-  paint();
-}
-async function showStats(){
-  const s=await stats(S.user.id);
-  const tiles=[['Просмотры',s.profile_views||0],['Подписчики',s.fr],['Подписки',s.fg],['Треков',s.up],['Лайков',s.lk],['Дней',s.ds],['Ачивок',s.ac]];
-  sheet(`<h2>Статистика</h2><div class="sgrid">${tiles.map(t=>`<div class="tile"><b>${t[1]}</b><small>${t[0]}</small></div>`).join('')}</div>`);
-}
-/* ---------- события ---------- */
-let lpT=null,lpFired=false,lpX=0,lpY=0;
-document.addEventListener('pointerdown',e=>{lpFired=false;clearTimeout(lpT);const it=e.target.closest('.tr[data-i]');if(!it||e.target.closest('[data-menu]'))return;lpX=e.clientX;lpY=e.clientY;
-  lpT=setTimeout(()=>{lpFired=true;if(navigator.vibrate)navigator.vibrate(12);openMenu(L[+it.dataset.l][+it.dataset.i],it)},480)});
-document.addEventListener('pointermove',e=>{if(Math.hypot(e.clientX-lpX,e.clientY-lpY)>10)clearTimeout(lpT)});
-['pointerup','pointercancel'].forEach(n=>document.addEventListener(n,()=>clearTimeout(lpT)));
-document.addEventListener('contextmenu',e=>{if(e.target.closest('.tr'))e.preventDefault()});
-document.addEventListener('click',e=>{
-  if(lpFired){lpFired=false;return}
-  const q=s=>e.target.closest(s);let x;
-  if(x=q('[data-go]'))return go(x.dataset.go);
-  if(q('[data-soon]'))return soon();
-  if(q('[data-bell]'))return openNotifs();
-  if(q('[data-ach]'))return openAch();
-  if(q('[data-bdg]'))return openBadges();
-  if(x=q('[data-sq]')){$('q').value=x.dataset.sq;return $('q').dispatchEvent(new Event('input'))}
-  if(x=q('[data-sx]')){setH(getH().filter(v=>v!==x.dataset.sx));return searchHome()}
-  if(q('[data-sclr]')){setH([]);return searchHome()}
-  if(q('[data-set2]'))return openSettings();
-  if(q('[data-orx]'))return toast('Скоро...');
-  if(q('[data-plus]'))return addTrack();
-  if(q('[data-addtrack]'))return addTrack();
-  if(q('[data-addpl]'))return addPlaylist();
-  if(q('[data-signin]'))return signIn();
-  if(q('[data-pe]'))return editProfile();
-  if(q('[data-st]'))return showStats();
-  if(q('[data-out]'))return sb.auth.signOut().then(()=>{S=null;admin=false;ME=null;LIKED.clear();UNREAD=0;sb.removeAllChannels();setNavAvatar();go('home')});
-  if(x=q('[data-more]'))return MORE[x.dataset.more]&&MORE[x.dataset.more]();
-  if(x=q('[data-back]'))return x.closest('.ov').close();
-  const it=q('[data-i]');
-  if(it){const t=L[+it.dataset.l][+it.dataset.i];
-     if(q('[data-menu]'))return openMenu(t,it);if(q('[data-like]'))return like(t);
-    queue=L[+it.dataset.l].slice();return play(+it.dataset.i)}
-  if(x=q('[data-p]'))return openPlaylist(x.dataset.p);
-  if(x=q('[data-u]'))return openUser(x.dataset.u);
-});
-(async()=>{
-  const {data}=await sb.auth.getSession();S=data.session;
-  if(S){
-    const [pr,lks]=await Promise.all([sb.from('profiles').select('*').eq('id',S.user.id).single(),sb.from('likes').select('track_id').eq('user_id',S.user.id)]);
-    ME=pr.data;admin=!!(ME&&ME.is_admin);(lks.data||[]).forEach(x=>LIKED.add(x.track_id));await loadSettings();initNotifs();
-    sb.from('activity_days').upsert({user_id:S.user.id,day:new Date().toISOString().slice(0,10)},{ignoreDuplicates:true}).then(()=>{},()=>{});
-  }
-  new ResizeObserver(()=>document.documentElement.style.setProperty('--dock-h',$('dock').offsetHeight+'px')).observe($('dock'));
-  lk.innerHTML=ic('heart');pp.innerHTML=ic('play','f');nx.innerHTML=ic('skip','f');setNavAvatar();
-  go('home');
-})();
-</script>
-</body>
-</html>
+  const d=sheet(`<h2>Новая ачивка</h2><input class="in" id="at" placeholder="Название"><input class="in" id="ad3" placeholder="Описание"><select class="in" id="am">${M.map(m=>`<option value="${m[0]}">${m[1]}</option>`).join('')}</select><input class="in" id="ath" type="number" min="1" placeholder="Порог (число)"><select class="in" id="abg"><op
