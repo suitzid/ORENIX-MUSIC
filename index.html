@@ -1,10 +1,11 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0d1512">
-<title>Orenix Music v0.4.12</title>
+<title>Orenix Music v0.4.12_fix-1</title>
 <style>
 /* Orenix Music v0.4.12 — стили */
 :root{
@@ -546,7 +547,16 @@ function createClient(url,key,opts){
   return {
     auth:{getSession,
       signInWithPassword:o=>pwAuth('/auth/v1/token?grant_type=password',{email:o.email,password:o.password}),
-      signUp:o=>pwAuth('/auth/v1/signup',{email:o.email,password:o.password}),
+      signUp:o=>pwAuth('/auth/v1/signup',{email:o.email,password:o.password,data:o.options&&o.options.data}),
+      async getUser(){const t=await token();try{const r=await fetch(url+'/auth/v1/user',{headers:{apikey:key,Authorization:'Bearer '+t}});const j=await r.json().catch(()=>({}));
+        return r.ok?{data:{user:j},error:null}:{data:{user:null},error:{message:j.msg||j.message||('HTTP '+r.status)}}}catch(e){return {data:{user:null},error:{message:'нет соединения'}}}},
+      async updateUser(o){const t=await token();try{const r=await fetch(url+'/auth/v1/user',{method:'PUT',headers:{apikey:key,Authorization:'Bearer '+t,'Content-Type':'application/json'},body:JSON.stringify(o)});const j=await r.json().catch(()=>({}));
+        if(!r.ok)return {data:{user:null},error:{message:j.msg||j.error_description||j.message||('HTTP '+r.status)}};
+        if(sess&&j.id){sess={...sess,user:{...sess.user,...j}};await save(sess)}return {data:{user:j},error:null}}catch(e){return {data:{user:null},error:{message:'нет соединения'}}}},
+      async linkIdentity(o){const t=await token();try{const rt=(o.options&&o.options.redirectTo)||location.href.split(/[?#]/)[0];
+        const r=await fetch(url+'/auth/v1/user/identities/authorize?provider='+enc(o.provider)+'&redirect_to='+enc(rt)+'&skip_http_redirect=true',{headers:{apikey:key,Authorization:'Bearer '+t}});const j=await r.json().catch(()=>({}));
+        if(!r.ok||!j.url)return {data:null,error:{message:j.msg||j.message||j.error_description||('HTTP '+r.status)}};
+        location.href=j.url;return {data:{provider:o.provider,url:j.url},error:null}}catch(e){return {data:null,error:{message:'нет соединения'}}}},
       resetPasswordForEmail:async(email,o)=>{const r=await pwAuth('/auth/v1/recover',{email});return r.error?r:{data:{},error:null}},
       onAuthStateChange(cb){subs.push(cb);return {data:{subscription:{unsubscribe(){const i=subs.indexOf(cb);if(i>=0)subs.splice(i,1)}}}}},
       async signInWithOAuth(o){location.href=url+'/auth/v1/authorize?provider='+enc(o.provider)+'&redirect_to='+enc((o.options&&o.options.redirectTo)||location.href.split(/[?#]/)[0]);return {data:{},error:null}},
@@ -570,7 +580,7 @@ window.supabase={createClient:createClient};
    notify pgrst, 'reload schema'; */
 /* SQL для бейджей-картинок (выполнить один раз в Supabase):
    alter table public.badges add column if not exists image_url text; */
-const VERSION='v0.4.13';
+const VERSION='v0.4.12_fix-1';
 const SB_URL='https://pehcelgdqtekkknpqvaa.supabase.co',SB_KEY='sb_publishable_0rAsicZ1ZzIC2qO6dJ-saQ_XBmlxVPc';
 const idb=(()=>{let p;const open=()=>p||(p=new Promise((res,rej)=>{const r=indexedDB.open('orx',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}));
   const tx=(m,f)=>open().then(db=>new Promise((res,rej)=>{const t=db.transaction('kv',m),q=f(t.objectStore('kv'));t.oncomplete=()=>res(q.result);t.onerror=()=>rej(t.error)}));
@@ -724,13 +734,15 @@ function mailAuth(){
     <button class="btn pri" id="ago">Войти</button>
     <button class="btn" id="afg" style="background:none;border:0;font-weight:500;color:var(--text-secondary);margin-top:0">Забыли пароль?</button>
     <div class="sh3" style="text-align:center;margin:10px 0">или</div>
-    <button class="btn btn-ic" id="agg">${G_IC}Войти через Google</button>`);
+    <button class="btn btn-ic" id="agg">${G_IC}Войти через Google</button>
+    <button class="btn btn-ic" id="axx">${ORX_IC}Войти через Orenix</button>`);
   const $a=i=>d.querySelector('#'+i);
   const setMode=m=>{mode=m;d.querySelectorAll('[data-am]').forEach(b=>b.classList.toggle('on',b.dataset.am===m));
     $a('ah').textContent=m==='in'?'Вход':'Регистрация';$a('ago').textContent=m==='in'?'Войти':'Создать аккаунт';
     $a('apw2').hidden=m==='in';$a('afg').hidden=m!=='in';$a('apw').autocomplete=m==='in'?'current-password':'new-password'};
   d.addEventListener('click',e=>{const b=e.target.closest('[data-am]');if(b)setMode(b.dataset.am)});
   $a('agg').onclick=()=>signInGoogle();
+  $a('axx').onclick=()=>{d.close();setTimeout(mxLogin,220)};
   $a('afg').onclick=async()=>{const em=$a('aem').value.trim();if(!em)return toast('Введите почту');
     const r=await sb.auth.resetPasswordForEmail(em);toast(r.error?authErr(r.error.message):'Письмо для сброса пароля отправлено')};
   $a('ago').onclick=async()=>{if(busy)return;const em=$a('aem').value.trim(),pw=$a('apw').value;
@@ -743,6 +755,71 @@ function mailAuth(){
     if(r.error)return toast(authErr(r.error.message));
     if(r.data&&r.data.session){d.close();toast(mode==='in'?'Вы вошли':'Аккаунт создан')}
     else{d.close();toast('Подтвердите почту: мы отправили письмо со ссылкой')}}}
+
+/* ---------- вход через Orenix Messenger ----------
+   Номер + пароль проверяет мессенджер, затем бот «Orenix Login» присылает запрос с кнопками «Подтвердить / Отменить».
+   SQL: orenix_login_messenger.sql (проект мессенджера) и orenix_login_music.sql (проект музыки). */
+const MX_URL='https://plysapfztvihxkioxtch.supabase.co',MX_KEY='sb_publishable_4diavlnDFnk4B4JoFt0MSQ_UeIaycEI';
+const MX_DOM='orenix-messenger.app',MX_OPEN='';/* сюда ссылку на приложение мессенджера, когда оно будет: кнопка «Открыть мессенджер» появится сама */
+const mxClient=()=>{const m={};return window.supabase.createClient(MX_URL,MX_KEY,{auth:{storage:{getItem:async k=>m[k]||null,setItem:async(k,v)=>{m[k]=v},removeItem:async k=>{delete m[k]}},persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}})};
+/* номер: код региона + от 1 до 10 цифр после него. Код +1/+7 — 1 цифра, остальные коды 2–3 цифры (всего 2–13 цифр) */
+const mxPhoneOk=d=>/^\d+$/.test(d)&&(/^[17]/.test(d)?d.length>=2&&d.length<=11:d.length>=2&&d.length<=13);
+const mxRand=()=>{const a=new Uint8Array(32);crypto.getRandomValues(a);return Array.from(a,b=>b.toString(16).padStart(2,'0')).join('')};
+function mxLogin(){
+  let busy=false,timer=null,dead=false;
+  const d=sheet(`<h2>Вход через Orenix Messenger</h2>
+    <div id="mxa"><p style="color:var(--text-secondary);margin:0 0 12px">Введите номер (код региона + от 1 до 10 цифр) и пароль от Orenix Messenger. Затем подтвердите вход в боте <b>Orenix Login</b>.</p>
+    <input class="in" id="mxp" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="Номер с кодом региона, например +7 9">
+    <input class="in" id="mxw" type="password" autocomplete="current-password" maxlength="32" placeholder="Пароль">
+    <button class="btn pri" id="mxgo">Продолжить</button></div>
+    <div id="mxb" hidden><p style="margin:0 0 6px"><b>Запрос отправлен</b></p>
+    <p style="color:var(--text-secondary);margin:0 0 14px">Откройте Orenix Messenger → чат <b>Orenix Login</b> и нажмите «Подтвердить вход». Эта страница сама продолжит после подтверждения.</p>
+    <button class="btn pri" id="mxop" hidden>Открыть Orenix Messenger</button>
+    <button class="btn" id="mxno">Отмена</button></div>`);
+  const $m=i=>d.querySelector('#'+i);
+  d.onclose=()=>{dead=true;clearTimeout(timer)};
+  if(MX_OPEN){$m('mxop').hidden=false;$m('mxop').onclick=()=>{location.href=MX_OPEN}}
+  $m('mxno').onclick=()=>d.close();
+  const fail=m=>{if(dead)return;toast(m);$m('mxa').hidden=false;$m('mxb').hidden=true;busy=false;$m('mxgo').disabled=false};
+  $m('mxgo').onclick=async()=>{
+    if(busy)return;const digits=$m('mxp').value.replace(/\D/g,''),pw=$m('mxw').value;
+    if(!digits)return toast('Введите номер телефона');
+    if(!mxPhoneOk(digits))return toast('Код региона и от 1 до 10 цифр номера');
+    if(!pw)return toast('Введите пароль');
+    busy=true;$m('mxgo').disabled=true;
+    const mx=mxClient();
+    const r=await mx.auth.signInWithPassword({email:digits+'@'+MX_DOM,password:pw});
+    if(r.error)return fail(/rate|too many/i.test(r.error.message)?'Слишком много попыток, подождите':/нет соединения/.test(r.error.message)?'Нет соединения':'Неверный номер или пароль');
+    const secret=mxRand();
+    const c=await mx.rpc('orxlogin_create',{p_secret:secret,p_app:'OrenixMus',p_device:(navigator.userAgentData&&navigator.userAgentData.platform)||(navigator.platform||'')+' · '+(/Android|iPhone|iPad/.test(navigator.userAgent)?'телефон':'браузер')});
+    try{await mx.auth.signOut()}catch(e){}
+    if(c.error)return fail(/orxlogin_|schema cache|function/i.test(c.error.message||'')?'Вход через мессенджер ещё не настроен (SQL)':(c.error.message||'Не удалось отправить запрос'));
+    const id=c.data;if(dead)return;
+    $m('mxa').hidden=true;$m('mxb').hidden=false;
+    const t0=Date.now(),anon=mxClient();
+    const poll=async()=>{
+      if(dead)return;
+      if(Date.now()-t0>5*60*1000)return fail('Время подтверждения истекло');
+      const s=await anon.rpc('orxlogin_status',{p_id:id,p_secret:secret});
+      const j=s.data;
+      if(j&&j.status==='approved'){dead=true;d.close();return mxFinish(j)}
+      if(j&&j.status==='denied')return fail('Вход отменён');
+      if(j&&(j.status==='expired'||j.status==='unknown'))return fail('Запрос устарел, попробуйте ещё раз');
+      timer=setTimeout(poll,2000)};
+    poll()};
+}
+async function mxFinish(j){
+  const email='mx-'+j.uid+'@'+MX_DOM,password=j.cred;
+  let r=await sb.auth.signInWithPassword({email,password}),fresh=false;
+  if(r.error&&/invalid login/i.test(r.error.message||'')){/* почту уже привязали на этом устройстве — вход идёт по ней */
+    const alt=ls.get('orx_mail_'+j.uid,'');if(alt)r=await sb.auth.signInWithPassword({email:alt,password})}
+  if(r.error&&/invalid login/i.test(r.error.message||'')){
+    r=await sb.auth.signUp({email,password,options:{data:{via:'orenix',mx_uid:j.uid}}});fresh=true;
+    if(!r.error&&!(r.data&&r.data.session))r=await sb.auth.signInWithPassword({email,password})}
+  if(r.error||!(r.data&&r.data.session))return toast(r.error&&/already|registered/i.test(r.error.message)?'Не удалось войти: аккаунт уже занят':'Не удалось войти. Выполните orenix_login_music.sql в Supabase музыки');
+  toast(fresh?'Аккаунт создан':'Вы вошли');
+  if(fresh&&j.name){try{await sb.from('profiles').update({username:String(j.name).slice(0,24)}).eq('id',r.data.session.user.id)}catch(e){}}
+}
 
 /* ---------- плеер ---------- */
 const au=new Audio();au.preload='auto';
@@ -1032,12 +1109,16 @@ function renameSheet(el){
     if(r.error)return toast(r.error.code==='23505'||/unique/.test(r.error.message)?'Это имя уже занято':'Ошибка: '+r.error.message);
     ME={...ME,username:v};const sn=el.querySelector('#sn');if(sn)sn.textContent=v;d.close();toast('Имя изменено')};
 }
+const isOrx=u=>!!u&&(/^mx-.+@orenix-messenger\.app$/i.test(u.email||'')||(u.user_metadata&&u.user_metadata.via==='orenix'));
+const realMail=u=>u&&u.email&&!/^mx-.+@orenix-messenger\.app$/i.test(u.email)?u.email:'';
+const hasGoogle=u=>!!u&&((u.identities||[]).some(i=>i.provider==='google')||(u.app_metadata&&(u.app_metadata.providers||[]).includes('google'))||(u.app_metadata&&u.app_metadata.provider==='google'));
 function secAccount(){
-  const el=openOv('Аккаунт',`<div class="swr"><div><b>Почта</b><small style="display:block">${esc(S.user.email||'—')}</small></div></div><div class="swr"><div><b>Способ входа</b><small style="display:block">${S.user.app_metadata&&S.user.app_metadata.provider==='google'?'Google':'Почта и пароль'}</small></div></div>
+  const via=isOrx(S.user)?'Orenix':S.user.app_metadata&&S.user.app_metadata.provider==='google'?'Google':'Почта и пароль';
+  const el=openOv('Аккаунт',`<div class="swr"><div><b>Почта</b><small style="display:block">${esc(realMail(S.user)||(isOrx(S.user)?'Не привязана':'—'))}</small></div></div><div class="swr"><div><b>Способ входа</b><small style="display:block">${via}</small></div></div>
     <button class="mrow" data-s="ava"><span class="mi-ic" id="sa">${ava(ME||{username:'?'},36)}</span><span>Аватар</span>${ic('more')}</button>
     <button class="mrow" data-s="name"><span class="mi-ic">${ic('user')}</span><span>Имя<small style="display:block" id="sn">${esc(ME&&ME.username||'')}</small></span>${ic('more')}</button>
     <button class="mrow" data-s="banner"><span class="mi-ic">${ic('edit')}</span><span>Баннер<small style="display:block">Меняется в «Изменить профиль»</small></span>${ic('more')}</button>
-    <button class="mrow" data-s="link"><span class="mi-ic">${ic('link')}</span><span>Привязки<small style="display:block">Orenix</small></span>${ic('more')}</button>
+    <button class="mrow" data-s="link"><span class="mi-ic">${ic('link')}</span><span>Привязки<small style="display:block">Google, почта</small></span>${ic('more')}</button>
     <button class="mrow dng" data-soon><span class="mi-ic">${ic('trash')}</span><span>Удалить аккаунт</span><span class="tag">Скоро</span></button><input type="file" id="sf" accept="image/*" hidden>`);
   el.addEventListener('click',e=>{const b=e.target.closest('[data-s]');if(!b)return;if(b.dataset.s==='ava')el.querySelector('#sf').click();if(b.dataset.s==='name')renameSheet(el);if(b.dataset.s==='link')secLinks();if(b.dataset.s==='banner'){closeOvs();editProfile()}});
   el.querySelector('#sf').onchange=async e=>{const f=e.target.files[0];if(!f)return;toast('Загружаю...');
@@ -1045,7 +1126,34 @@ function secAccount(){
     const r=await sb.from('profiles').update({avatar_url:u}).eq('id',S.user.id);if(r.error)return toast('Ошибка: '+r.error.message);
     ME={...ME,avatar_url:u};setNavAvatar();el.querySelector('#sa').innerHTML=ava(ME,36);hydrate(el);toast('Аватар обновлён')};
 }
-function secLinks(){openOv('Привязки',`<div class="sh3">Сервисы</div><button class="mrow" data-orx><span class="mi-ic">${ORX_IC}</span><span>Orenix<small style="display:block">Не привязан</small></span><span class="tag">Скоро</span></button>`)}
+async function secLinks(){
+  const el=openOv('Привязки','<div class="sh3">Загрузка…</div>');
+  let u=S.user;try{const g=await sb.auth.getUser();if(g.data&&g.data.user){u=g.data.user;S.user={...S.user,...u}}}catch(e){}
+  if(!el.isConnected)return;
+  const orx=isOrx(u),mail=realMail(u),goo=hasGoogle(u);
+  const row=(k,ic_,t,st,tag)=>`<button class="mrow" data-l="${k}"><span class="mi-ic">${ic_}</span><span>${t}<small style="display:block">${st}</small></span><span class="tag">${tag}</span></button>`;
+  el.querySelector('.sh3').outerHTML='<div class="sh3">Сервисы</div>'+
+    row('g',G_IC,'Google',goo?'Привязан':'Не привязан',goo?'Готово':'Привязать')+
+    row('m',MAIL_IC,'Почта',esc(mail||'Не привязана'),mail?'Готово':'Привязать')+
+    row('o',ORX_IC,'Orenix',orx?'Вы вошли через Orenix':'Не привязан',orx?'Готово':'Скоро');
+  el.addEventListener('click',async e=>{const b=e.target.closest('[data-l]');if(!b)return;const k=b.dataset.l;
+    if(k==='g'){if(goo)return toast('Google уже привязан');
+      const r=await sb.auth.linkIdentity({provider:'google'});if(r.error)toast(/manual linking|disabled/i.test(r.error.message)?'Привязка выключена в Supabase (Manual linking)':'Не удалось: '+r.error.message);return}
+    if(k==='m'){if(mail)return toast('Почта уже привязана');linkMailSheet()}
+    if(k==='o')toast(orx?'Вы уже вошли через Orenix':'Привязка Orenix скоро')})
+}
+function linkMailSheet(){
+  let busy=false;
+  const d=sheet(`<h2>Привязать почту</h2><p style="color:var(--text-secondary);margin:0 0 12px">Мы отправим письмо со ссылкой. После подтверждения почту можно использовать для входа.</p>
+    <input class="in" id="lme" type="email" inputmode="email" autocomplete="email" autocapitalize="off" placeholder="Почта"><button class="btn pri" id="lmg">Отправить письмо</button>`);
+  d.querySelector('#lmg').onclick=async()=>{if(busy)return;const em=d.querySelector('#lme').value.trim();
+    if(!/^\S+@\S+\.\S+$/.test(em))return toast('Введите корректную почту');
+    busy=true;d.querySelector('#lmg').disabled=true;
+    const r=await sb.auth.updateUser({email:em});busy=false;d.querySelector('#lmg').disabled=false;
+    if(r.error)return toast(authErr(r.error.message));
+    if(isOrx(S.user)){const m=/^mx-(.+)@/i.exec(S.user.email||'');if(m)ls.set('orx_mail_'+m[1],em)}
+    d.close();toast('Подтвердите почту: письмо отправлено')}
+}
 function secNotif(){const el=openOv('Уведомления',sw('n_follow','Новые подписчики')+sw('n_top','Трек стал №1')+'<div class="ft" style="padding:12px 0">Бейджи и ачивки приходят всегда</div>');bindSw(el,countUnread)}
 function secPriv(){
   const on0=!!(ME&&ME.priv&&ME.priv.hide_uploads);
@@ -1304,7 +1412,7 @@ document.addEventListener('click',e=>{
   if(x=q('[data-sx]')){setH(getH().filter(v=>v!==x.dataset.sx));return searchHome()}
   if(q('[data-sclr]')){setH([]);return searchHome()}
   if(q('[data-set2]'))return openSettings();
-  if(q('[data-orx]'))return toast('Скоро...');
+  if(q('[data-orx]'))return S?toast('Привязка скоро'):mxLogin();
   if(q('[data-plus]'))return addTrack();
   if(q('[data-addtrack]'))return addTrack();
   if(q('[data-addpl]'))return addPlaylist();
@@ -1355,3 +1463,5 @@ async function loadUser(){
 <script>setTimeout(function(){var j=document.createElement('script');j.src='https://cdn.jsdelivr.net/npm/jsmediatags@3.9.7/dist/jsmediatags.min.js';j.async=true;j.onerror=function(){};document.head.appendChild(j)},2500)</script>
 </body>
 </html>
+
+</body></html>
